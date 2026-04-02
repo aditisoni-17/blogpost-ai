@@ -1,0 +1,182 @@
+import { NextRequest } from "next/server";
+import {
+  errorResponse,
+  successResponse,
+  verifyAuth,
+  verifyRole,
+} from "@/app/lib/middleware";
+import { supabase } from "@/app/lib/supabase";
+import { generateSummary } from "@/app/lib/ai";
+
+// GET /api/posts/[id] - Get a specific post
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const postId = params.id;
+
+    const { data: post, error } = await supabase
+      .from("posts")
+      .select(
+        `
+        id,
+        title,
+        body,
+        image_url,
+        summary,
+        author_id,
+        created_at,
+        updated_at,
+        is_published,
+        view_count,
+        users:author_id(id, name, email)
+      `
+      )
+      .eq("id", postId)
+      .single();
+
+    if (error || !post) {
+      return errorResponse("Post not found", 404);
+    }
+
+    // Increment view count
+    await supabase
+      .from("posts")
+      .update({ view_count: (post.view_count || 0) + 1 })
+      .eq("id", postId);
+
+    return successResponse({ post });
+  } catch (error) {
+    console.error("GET post error:", error);
+    return errorResponse("Internal server error", 500);
+  }
+}
+
+// PUT /api/posts/[id] - Update a post (author can update own, admin can update any)
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const postId = params.id;
+    const verification = await verifyRole(request, ["author", "admin"]);
+
+    if (!verification.valid) {
+      return errorResponse(
+        verification.error || "Unauthorized",
+        verification.status || 401
+      );
+    }
+
+    // Get the post
+    const { data: post, error: getError } = await supabase
+      .from("posts")
+      .select("author_id")
+      .eq("id", postId)
+      .single();
+
+    if (getError || !post) {
+      return errorResponse("Post not found", 404);
+    }
+
+    // Check authorization
+    const isOwner = post.author_id === verification.user!.id;
+    const isAdmin = verification.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return errorResponse("You can only edit your own posts", 403);
+    }
+
+    const { title, body, image_url } = await request.json();
+
+    if (!title || !body) {
+      return errorResponse("Title and body are required", 400);
+    }
+
+    // Update post
+    const { data: updatedPost, error: updateError } = await supabase
+      .from("posts")
+      .update({
+        title,
+        body,
+        image_url,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", postId)
+      .select()
+      .single();
+
+    if (updateError) {
+      return errorResponse("Failed to update post", 500);
+    }
+
+    // Regenerate summary if body changed
+    const summary = await generateSummary(body);
+    if (summary) {
+      await supabase
+        .from("posts")
+        .update({ summary })
+        .eq("id", postId);
+
+      updatedPost.summary = summary;
+    }
+
+    return successResponse({ message: "Post updated successfully", post: updatedPost });
+  } catch (error) {
+    console.error("PUT post error:", error);
+    return errorResponse("Internal server error", 500);
+  }
+}
+
+// DELETE /api/posts/[id] - Delete a post (author can delete own, admin can delete any)
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const postId = params.id;
+    const verification = await verifyRole(request, ["author", "admin"]);
+
+    if (!verification.valid) {
+      return errorResponse(
+        verification.error || "Unauthorized",
+        verification.status || 401
+      );
+    }
+
+    // Get the post
+    const { data: post, error: getError } = await supabase
+      .from("posts")
+      .select("author_id")
+      .eq("id", postId)
+      .single();
+
+    if (getError || !post) {
+      return errorResponse("Post not found", 404);
+    }
+
+    // Check authorization
+    const isOwner = post.author_id === verification.user!.id;
+    const isAdmin = verification.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return errorResponse("You can only delete your own posts", 403);
+    }
+
+    // Delete post
+    const { error: deleteError } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", postId);
+
+    if (deleteError) {
+      return errorResponse("Failed to delete post", 500);
+    }
+
+    return successResponse({ message: "Post deleted successfully" });
+  } catch (error) {
+    console.error("DELETE post error:", error);
+    return errorResponse("Internal server error", 500);
+  }
+}
