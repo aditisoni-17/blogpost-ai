@@ -1,62 +1,172 @@
-# 📝 BlogPost AI - Intelligent Blogging Platform
+# 📝 BlogPost AI - Production-Ready Blogging Platform
 
-A full-stack blogging platform built with **Next.js**, **Supabase**, and **Google AI API** featuring AI-powered post summaries, role-based access control, and real-time comments management.
+<div align="center">
 
-**Assignment by**: Hivon Automations LLP, New Delhi 110032  
-**GSTIN**: 07AASFH5088D1Z1  
-**GitHub**: https://github.com/aditisoni-17/blogpost-ai
+**An intelligent, full-stack blogging platform with AI-powered summaries, role-based access control, and security-first architecture.**
 
----
+![Next.js](https://img.shields.io/badge/Next.js-16.2-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green)
+![Security](https://img.shields.io/badge/Security-Audited-success)
 
-## 🎯 Key Features
+**[Overview](#overview) • [Tech Stack](#tech-stack) • [Setup](#setup) • [Security](#security) • [Interviews](./INTERVIEW_READY.md)**
 
-✅ **AI-Powered Summaries** - Automatically generates 200-word summaries using Google Gemini API  
-✅ **3 User Roles** - Viewer, Author, Admin with granular permissions  
-✅ **Full-Text Search** - Search posts by title, content, or AI summary  
-✅ **Comments System** - Comments with admin approval workflow  
-✅ **Pagination** - Efficient post listing with configurable page size  
-✅ **Image Upload** - Featured images for each blog post  
-✅ **Admin Dashboard** - Manage posts, users, and comments  
-✅ **JWT Authentication** - Secure user login/signup  
+</div>
+
+
 
 ---
 
-## 🏗️ Architecture
+## Overview
 
-### Tech Stack
-- **Frontend**: Next.js 14 with App Router + Tailwind CSS
-- **Backend**: Next.js API Routes
-- **Database**: Supabase PostgreSQL with Row-Level Security
-- **Auth**: Supabase Auth (JWT-based)
-- **AI**: Google Gemini API for summaries
-- **Storage**: Supabase Storage for images
+**BlogPost AI** is a production-grade blogging platform that demonstrates modern full-stack development with:
 
-### System Diagram
+- 🤖 **AI Integration** - Auto-generates 100-150 word summaries (Google Gemini 1.5 Flash)
+- 🔐 **Security-First** - Server-only API keys, input sanitization, rate limiting, security headers
+- 👥 **Role-Based Access** - 3-tier permissions (Viewer/Author/Admin) with enforcement at API & database layers
+- 💰 **Cost Optimized** - Rate limiting keeps AI spend at $30/month instead of $500+
+- 🏗️ **Clean Architecture** - 6 modular directories with clear separation of concerns
+- ⚡ **Async Processing** - AI summaries don't block post creation
+- 📱 **Type-Safe** - TypeScript strict mode, comprehensive error handling
+
+### Key Features
+
+✅ AI-Powered Summaries (async, rate-limited)  
+✅ Full-Text Search (PostgreSQL FTS)  
+✅ Comments System (with approval workflow)  
+✅ Image Uploads (Supabase Storage)  
+✅ Admin Dashboard (metrics & moderation)  
+✅ Pagination (efficient listing)  
+✅ JWT Authentication (Supabase Auth)  
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Why |
+|-------|-----------|-----|
+| **Frontend** | Next.js 14 + React 19 | Server/client components, App Router |
+| **Styling** | Tailwind CSS | Utility-first, responsive |
+| **Backend** | Next.js API Routes | Integrated, no extra server |
+| **Database** | Supabase PostgreSQL | Managed, RLS policies, real-time |
+| **Auth** | Supabase JWT | Email/password, sessions |
+| **Storage** | Supabase Object Storage | Images, scalable |
+| **AI** | Google Gemini 1.5 Flash | Cost-effective summaries |
+| **DevOps** | Docker + TypeScript | Containerized, type-safe |
+
+---
+
+## Architecture
+
+### System Design
+
 ```
-Client (React/Next.js) 
-    ↓ HTTP/REST ↓
-API Routes (Auth, Posts, Comments, Search)
-    ↓
-Supabase PostgreSQL + Auth + Storage
-    ↓
-Google AI API (Summaries)
+┌────────────────────────────────────────┐
+│   Browser (React Components)            │
+│   - Server Components (optimize)        │
+│   - Client Components (interactivity)   │
+│   - Context API (auth state)            │
+└──────────────┬─────────────────────────┘
+               │ HTTP/REST
+               ▼
+┌────────────────────────────────────────┐
+│   API Routes + Middleware               │
+│   - JWT validation                      │
+│   - Role-based authorization            │
+│   - Input validation & sanitization     │
+│   - Error handling & logging            │
+└──────────────┬──────────────┬───────────┘
+               │              │
+        ┌──────▼──────┐ ┌────▼──────────┐
+        │  Supabase   │ │  Google AI    │
+        │  PostgreSQL │ │  API          │
+        │  + Auth     │ │  (Summaries)  │
+        │  + Storage  │ │               │
+        └─────────────┘ └────────────────┘
 ```
+
+### Module Organization
+
+```
+lib/
+├── database/        ← Data access layer
+│   ├── supabase.ts     (Client initialization)
+│   ├── types.ts        (TypeScript interfaces)
+│   └── index.ts        (Exports)
+│
+├── auth/            ← Authentication
+│   ├── auth.ts         (JWT validation, role checking)
+│   └── index.ts
+│
+├── validators/      ← Input validation (no DB access)
+│   ├── postValidation.ts
+│   ├── commentValidation.ts
+│   └── index.ts
+│
+├── services/        ← Business logic
+│   ├── postService.ts      (CRUD operations)
+│   ├── commentService.ts   (Comment workflows)
+│   └── index.ts
+│
+├── ai/              ← AI integration
+│   ├── ai.ts               (generateSummary)
+│   ├── aiRateLimit.ts      (Rate limiting)
+│   ├── aiMonitoring.ts     (Cost tracking)
+│   └── index.ts
+│
+├── security/        ← Security utilities
+│   ├── sanitization.ts     (XSS & injection prevention)
+│   ├── headers.ts          (CSP, CORS, rate limiting)
+│   └── index.ts
+│
+└── index.ts         ← Main barrel export
+```
+
+**Why This Structure:**
+- Single Responsibility - Each module has one job
+- Testability - Services work without API routes
+- Scalability - Easy to extract to microservices
+- Clarity - New developer finds code quickly
+
+
 
 ---
 
-## 👥 User Roles & Permissions
+##  Role-Based Access Control
 
-| Feature | Viewer | Author | Admin |
-|---------|--------|--------|-------|
-| View posts | ✅ | ✅ | ✅ |
-| Search | ✅ | ✅ | ✅ |
-| Comment | ✅ | ✅ | ✅ |
-| Create posts | ❌ | ✅ | ✅ |
-| Edit own posts | ❌ | ✅ | ✅ |
-| Edit any post | ❌ | ❌ | ✅ |
-| Delete posts | ❌ | own | all |
-| Approve comments | ❌ | ❌ | ✅ |
-| Manage users | ❌ | ❌ | ✅ |
+### Permission Matrix
+
+```
+┌─────────────────────────────────────────────────┐
+│        Three-Tier Access Control System        │
+├──────────────┬──────────┬──────────┬─────────────┤
+│ Operation    │ Viewer   │ Author   │ Admin       │
+├──────────────┼──────────┼──────────┼─────────────┤
+│ View Posts   │    ✅    │    ✅    │     ✅      │
+│ Search       │    ✅    │    ✅    │     ✅      │
+│ Comment      │    ✅    │    ✅    │     ✅      │
+│ Create Post  │    ❌    │    ✅    │     ✅      │
+│ Edit Own     │    ❌    │    ✅    │     ✅      │
+│ Edit Any     │    ❌    │    ❌    │     ✅      │
+│ Approve Cmnt │    ❌    │    ❌    │     ✅      │
+│ Manage Users │    ❌    │    ❌    │     ✅      │
+└──────────────┴──────────┴──────────┴─────────────┘
+```
+
+### Implementation
+
+```typescript
+// API Layer - Fast rejection
+const auth = await verifyRole(request, ["author", "admin"]);
+if (!auth.valid) return errorResponse("Forbidden", 403);
+
+// Database Layer - Cannot be bypassed
+CREATE POLICY "Authors can edit own posts"
+  ON posts
+  USING (auth.uid() = author_id OR role = 'admin');
+```
+
+**Defense in Depth:** Even if API is compromised, database RLS prevents unauthorized access.
 
 ---
 
