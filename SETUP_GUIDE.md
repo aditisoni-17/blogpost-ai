@@ -8,14 +8,15 @@ This guide walks you through setting up your Supabase project for the BlogPost A
 - Service Role Key (from Supabase dashboard)
 
 **Current Setup:**
-- ✅ Project URL: https://ssmwdgyhreqqwtxbuspz.supabase.co
-- ✅ Anon Key: sb_publishable_DEl8pAtZ6ykXR7TanAjPoQ_Kf18Orjb
+- ✅ Project URL: Use your own Supabase project URL
+- ✅ Anon Key: Use your own anon key from Supabase dashboard
+- ⚠️ Remove real keys from documentation for security!
 
 ---
 
 ## Step 1: Access Supabase SQL Editor
 
-1. Go to https://ssmwdgyhreqqwtxbuspz.supabase.co
+1. Go to your Supabase project dashboard
 2. Login with your credentials
 3. In the left sidebar, click **SQL Editor**
 4. Click **New Query** button
@@ -236,10 +237,10 @@ WHERE table_name IN ('users', 'posts', 'comments');
 
 1. Update `.env.local` with your credentials:
    ```env
-   NEXT_PUBLIC_SUPABASE_URL=https://ssmwdgyhreqqwtxbuspz.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_DEl8pAtZ6ykXR7TanAjPoQ_Kf18Orjb
-   SUPABASE_SERVICE_ROLE_KEY=[YOUR_SERVICE_ROLE_KEY]
-   NEXT_PUBLIC_GOOGLE_AI_API_KEY=AIzaSyCU_nRzruhkCL-gxM6syen_PsnLB0DvWJw
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_your_anon_key_here
+   SUPABASE_SERVICE_ROLE_KEY=sb_secret_your_service_role_key_here
+   GOOGLE_AI_API_KEY=your_google_ai_api_key_here
    ```
 
 2. Start development server:

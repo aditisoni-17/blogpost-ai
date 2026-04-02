@@ -726,7 +726,7 @@ export async function generateSummary(postContent: string): Promise<string | nul
 
 **Location**: `.env.local`
 ```
-NEXT_PUBLIC_GOOGLE_AI_API_KEY=AIzaSyCU_nRzruhkCL-...
+NEXT_PUBLIC_GOOGLE_AI_API_KEY=your_google_ai_api_key_here
 ```
 
 **Problem**:
