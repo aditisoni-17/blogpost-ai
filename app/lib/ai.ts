@@ -13,6 +13,28 @@ export interface GenerateContentRequest {
   };
 }
 
+/**
+ * Generate an optimized prompt for blog post summarization
+ * Improved for quality, brevity, and cost efficiency
+ */
+function createOptimizedPrompt(postContent: string): string {
+  return `You are an expert blog summarizer. Create a compelling, highly readable summary 
+of this blog post for casual readers. This summary will be displayed on a blog index page.
+
+REQUIREMENTS:
+- Length: 100-150 words (concise, not verbose)
+- Format: One paragraph, engaging and scannable
+- Style: Conversational, friendly, accessible tone
+- Content: Main topic + 2-3 key points + key takeaway
+- Quality: Clear, grammatically perfect, no jargon
+- Do NOT include: Meta-commentary, repetition, promotional language, or disclaimers
+
+Blog Post:
+${postContent}
+
+Return ONLY the summary. No prefix, no explanation, no "Here is the summary:".`;
+}
+
 export async function generateSummary(postContent: string): Promise<string | null> {
   if (!GOOGLE_AI_API_KEY) {
     console.error("Google AI API key not configured");
@@ -20,11 +42,7 @@ export async function generateSummary(postContent: string): Promise<string | nul
   }
 
   try {
-    const prompt = `Please generate a concise summary of the following blog post in approximately 200 words. Focus on the main points and key takeaways:
-
-${postContent}
-
-Provide only the summary, without any introduction or concluding remarks.`;
+    const prompt = createOptimizedPrompt(postContent);
 
     const request: GenerateContentRequest = {
       contents: [
@@ -37,7 +55,7 @@ Provide only the summary, without any introduction or concluding remarks.`;
         },
       ],
       generationConfig: {
-        maxOutputTokens: 300,
+        maxOutputTokens: 250, // Reduced from 300 for cost efficiency
         temperature: 0.7,
       },
     };
@@ -57,11 +75,16 @@ Provide only the summary, without any introduction or concluding remarks.`;
     }
 
     const data = await response.json();
-    const summary = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    let summary = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!summary) {
       console.error("No summary generated from Google AI");
       return null;
+    }
+
+    // ✅ Ensure summary doesn't exceed reasonable length
+    if (summary.length > 1500) {
+      summary = summary.substring(0, 1500).trim() + "...";
     }
 
     return summary;

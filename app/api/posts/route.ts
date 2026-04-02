@@ -2,11 +2,11 @@ import { NextRequest } from "next/server";
 import {
   errorResponse,
   successResponse,
-  verifyAuth,
   verifyRole,
 } from "@/app/lib/middleware";
 import { supabase } from "@/app/lib/supabase";
 import { generateSummary } from "@/app/lib/ai";
+import { canGenerateSummary } from "@/app/lib/aiRateLimit";
 
 // GET /api/posts - Get all published posts with pagination
 export async function GET(request: NextRequest) {
@@ -81,7 +81,15 @@ export async function POST(request: NextRequest) {
       return errorResponse("Title and body are required", 400);
     }
 
-    // Create post
+    // ✅ Check rate limit for AI calls
+    if (!canGenerateSummary(verification.user!.id)) {
+      return errorResponse(
+        "Too many posts created. You can create up to 10 AI summaries per hour. Please try again later.",
+        429
+      );
+    }
+
+    // ✅ Create post immediately (don't wait for AI)
     const { data: post, error: postError } = await supabase
       .from("posts")
       .insert([
@@ -91,6 +99,7 @@ export async function POST(request: NextRequest) {
           image_url,
           author_id: verification.user!.id,
           is_published: true,
+          summary: null, // Will be filled by async generation
         },
       ])
       .select()
@@ -100,23 +109,59 @@ export async function POST(request: NextRequest) {
       return errorResponse("Failed to create post", 500);
     }
 
-    // Generate summary asynchronously
-    const summary = await generateSummary(body);
-    if (summary) {
-      await supabase
-        .from("posts")
-        .update({ summary })
-        .eq("id", post.id);
+    // ✅ Generate summary asynchronously (fire and forget)
+    // This way, user gets immediate response, summary fills in later
+    generateSummaryAsync(post.id, body).catch((err) => {
+      console.error(`[AI] Failed to generate summary for post ${post.id}:`, err);
+    });
 
-      post.summary = summary;
-    }
-
+    // ✅ Return immediately with message
     return successResponse(
-      { message: "Post created successfully", post },
+      {
+        message:
+          "Post created successfully! AI summary is being generated and will appear shortly.",
+        post: {
+          ...post,
+          summary: null,
+        },
+        summaryPending: true,
+      },
       201
     );
   } catch (error) {
     console.error("POST posts error:", error);
     return errorResponse("Internal server error", 500);
+  }
+}
+
+/**
+ * Generate AI summary asynchronously without blocking the response
+ * If generation fails, returns gracefully (post still exists)
+ */
+async function generateSummaryAsync(postId: string, body: string) {
+  try {
+    const summary = await generateSummary(body);
+
+    if (summary) {
+      // Update post with generated summary
+      const { error } = await supabase
+        .from("posts")
+        .update({ summary, updated_at: new Date().toISOString() })
+        .eq("id", postId);
+
+      if (error) {
+        console.error(`[AI] Failed to save summary for post ${postId}:`, error);
+      } else {
+        console.log(
+          `[AI] Summary generated successfully for post ${postId} (${summary.length} chars)`
+        );
+      }
+    } else {
+      console.warn(
+        `[AI] No summary generated for post ${postId} (API returned null)`
+      );
+    }
+  } catch (error) {
+    console.error(`[AI] Unexpected error generating summary for post ${postId}:`, error);
   }
 }
