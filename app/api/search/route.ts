@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
-import { errorResponse, successResponse } from "@/app/lib/middleware";
-import { supabase } from "@/app/lib/supabase";
+import { errorResponse, successResponse, supabase } from "@/app/lib";
 
 // GET /api/search - Search posts
 export async function GET(request: NextRequest) {

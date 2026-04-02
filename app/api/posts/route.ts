@@ -21,7 +21,7 @@ import {
   getContentStats,
   estimateReadingTime,
 } from "@/app/lib/validation";
-import { createPost, fetchPublishedPosts } from "@/app/lib/postService";
+import { createPost, fetchPublishedPosts } from "@/app/lib";
 
 /**
  * GET /api/posts

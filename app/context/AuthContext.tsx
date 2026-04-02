@@ -2,8 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { supabase } from "@/app/lib/supabase";
-import { checkRole } from "@/app/lib/auth";
+import { supabase, checkRole } from "@/app/lib";
 
 interface UserProfile {
   id: string;

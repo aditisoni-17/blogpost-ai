@@ -1,5 +1,5 @@
 import { useAuth } from "@/app/context/AuthContext";
-import { supabase } from "@/app/lib/supabase";
+import { supabase } from "@/app/lib";
 
 export function useAuthFetch() {
   const { user } = useAuth();

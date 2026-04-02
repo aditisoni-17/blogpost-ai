@@ -9,7 +9,7 @@ import { useState, useCallback } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAuthFetch } from "@/app/hooks/useAuthFetch";
 import Link from "next/link";
-import { COMMENT_VALIDATION, getCommentStats } from "@/app/lib/commentValidation";
+import { COMMENT_VALIDATION, getCommentTextStats } from "@/app/lib";
 
 interface Comment {
   id: string;
@@ -174,7 +174,7 @@ export function CommentsSection({
   };
 
   // Get stats for display
-  const stats = getCommentStats(form.text);
+  const stats = getCommentTextStats(form.text);
   const isFormValid = form.text.trim() && !errors.text;
 
   return (

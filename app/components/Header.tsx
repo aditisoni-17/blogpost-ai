@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
-import { logout } from "@/app/lib/auth";
+import { logout } from "@/app/lib";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 

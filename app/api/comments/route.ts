@@ -14,14 +14,10 @@ import {
   errorResponse,
   successResponse,
   verifyAuth,
-  verifyRole,
-} from "@/app/lib/middleware";
-import { validateCreateCommentInput } from "@/app/lib/commentValidation";
-import {
+  validateCreateCommentInput,
   createComment,
   getApprovedCommentsByPost,
-  deleteComment,
-} from "@/app/lib/commentService";
+} from "@/app/lib";
 
 /**
  * GET /api/comments
@@ -126,42 +122,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("[API] POST /api/comments error:", error);
-    return errorResponse("Internal server error", 500);
-  }
-}
-
-/**
- * DELETE /api/comments/[commentId]
- * 
- * Delete a comment (user can delete own, admin can delete any)
- * Requires authentication
- */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    // 1. Verify authentication
-    const user = await verifyAuth(request);
-
-    if (!user) {
-      return errorResponse("Unauthorized", 401);
-    }
-
-    // 2. Get userRole for admin check
-    const verification = await verifyRole(request, ["user", "author", "admin"]);
-    const isAdmin = verification.role === "admin";
-
-    // 3. Delete comment
-    const result = await deleteComment(params.id, user.id, isAdmin);
-
-    if (!result.success) {
-      return errorResponse(result.error || "Failed to delete comment", result.statusCode);
-    }
-
-    return successResponse({ message: "Comment deleted successfully" });
-  } catch (error) {
-    console.error("[API] DELETE /api/comments error:", error);
     return errorResponse("Internal server error", 500);
   }
 }

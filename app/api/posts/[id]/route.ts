@@ -3,16 +3,17 @@ import {
   errorResponse,
   successResponse,
   verifyRole,
-} from "@/app/lib/middleware";
-import { supabase } from "@/app/lib/supabase";
+} from "@/app/lib";
+import { supabase } from "@/app/lib";
 
 // GET /api/posts/[id] - Get a specific post
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const postId = params.id;
+    const resolvedParams = await params;
+    const postId = resolvedParams.id;
 
     const { data: post, error } = await supabase
       .from("posts")
@@ -54,10 +55,11 @@ export async function GET(
 // PUT /api/posts/[id] - Update a post (author can update own, admin can update any)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const postId = params.id;
+    const resolvedParams = await params;
+    const postId = resolvedParams.id;
     const verification = await verifyRole(request, ["author", "admin"]);
 
     if (!verification.valid) {
@@ -154,10 +156,11 @@ export async function PUT(
 // DELETE /api/posts/[id] - Delete a post (author can delete own, admin can delete any)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const postId = params.id;
+    const resolvedParams = await params;
+    const postId = resolvedParams.id;
     const verification = await verifyRole(request, ["author", "admin"]);
 
     if (!verification.valid) {

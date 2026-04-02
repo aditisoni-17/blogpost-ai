@@ -9,13 +9,13 @@ import {
   successResponse,
   verifyAuth,
   verifyRole,
-} from "@/app/lib/middleware";
-import { validateCommentId } from "@/app/lib/commentValidation";
-import { deleteComment } from "@/app/lib/commentService";
+  validateCommentId,
+  deleteComment,
+} from "@/app/lib";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 1. Verify authentication
@@ -26,9 +26,10 @@ export async function DELETE(
     }
 
     // 2. Validate comment ID (basic format check)
+    const resolvedParams = await params;
     let commentId;
     try {
-      commentId = validateCommentId(params.id);
+      commentId = validateCommentId(resolvedParams.id);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Invalid comment ID";
       return errorResponse(message, 400);
