@@ -1,5 +1,31 @@
 import { supabase } from "./supabase";
 
+/**
+ * Get a valid access token, refreshing if necessary
+ * Automatically refreshes token if it expires in the next 60 seconds
+ */
+export async function getValidToken(): Promise<string | null> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) return null;
+
+    const expiresAt = data.session.expires_at;
+    const now = Math.floor(Date.now() / 1000);
+
+    // If token expires in next 60 seconds, refresh it
+    if (expiresAt && expiresAt - now < 60) {
+      const { data: refreshed, error } = await supabase.auth.refreshSession();
+      if (error || !refreshed.session) return null;
+      return refreshed.session.access_token;
+    }
+
+    return data.session.access_token;
+  } catch (error) {
+    console.error("Error getting valid token:", error);
+    return null;
+  }
+}
+
 export async function getCurrentUser() {
   const {
     data: { user },

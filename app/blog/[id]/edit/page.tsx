@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
+import { useAuthFetch } from "@/app/hooks/useAuthFetch";
 import Link from "next/link";
 
 interface Post {
@@ -18,6 +19,7 @@ export default function EditPostPage() {
   const params = useParams();
   const postId = params.id as string;
   const { isAuthenticated, user, isAuthor, isAdmin } = useAuth();
+  const { fetchWithAuth } = useAuthFetch();
 
   const [post, setPost] = useState<Post | null>(null);
   const [title, setTitle] = useState("");
@@ -105,16 +107,8 @@ export default function EditPostPage() {
     setError(null);
 
     try {
-      const {
-        data: { session },
-      } = await (await import("@/app/lib/supabase")).supabase.auth.getSession();
-
-      const response = await fetch(`/api/posts/${postId}`, {
+      const response = await fetchWithAuth(`/api/posts/${postId}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || ""}`,
-        },
         body: JSON.stringify({
           title: title.trim(),
           body: body.trim(),
@@ -132,7 +126,9 @@ export default function EditPostPage() {
       router.push(`/blog/${postId}`);
     } catch (err) {
       console.error("Error updating post:", err);
-      setError("An error occurred while updating the post");
+      setError(
+        err instanceof Error ? err.message : "An error occurred while updating the post"
+      );
     } finally {
       setSubmitting(false);
     }

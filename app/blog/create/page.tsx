@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
+import { useAuthFetch } from "@/app/hooks/useAuthFetch";
 import Link from "next/link";
 
 export default function CreatePostPage() {
   const router = useRouter();
   const { isAuthenticated, isAuthor } = useAuth();
+  const { fetchWithAuth } = useAuthFetch();
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -51,16 +53,8 @@ export default function CreatePostPage() {
     setError(null);
 
     try {
-      const {
-        data: { session },
-      } = await (await import("@/app/lib/supabase")).supabase.auth.getSession();
-
-      const response = await fetch("/api/posts", {
+      const response = await fetchWithAuth("/api/posts", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || ""}`,
-        },
         body: JSON.stringify({
           title: title.trim(),
           body: body.trim(),
@@ -78,7 +72,9 @@ export default function CreatePostPage() {
       router.push(`/blog/${data.post.id}`);
     } catch (err) {
       console.error("Error creating post:", err);
-      setError("An error occurred while creating the post");
+      setError(
+        err instanceof Error ? err.message : "An error occurred while creating the post"
+      );
     } finally {
       setLoading(false);
     }

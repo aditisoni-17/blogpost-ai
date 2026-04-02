@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { supabase } from "@/app/lib/supabase";
 
 interface Post {
   id: string;
@@ -36,6 +35,7 @@ export default function Home() {
         ? `/api/search?q=${encodeURIComponent(searchQuery)}&page=${page}`
         : `/api/posts?page=${page}`;
 
+      // No auth needed for public endpoints
       const response = await fetch(endpoint);
       const data = await response.json();
 

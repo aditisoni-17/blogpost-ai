@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
+import { useAuthFetch } from "@/app/hooks/useAuthFetch";
 import { useParams, useRouter } from "next/navigation";
 
 interface Post {
@@ -40,6 +41,7 @@ export default function BlogDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { isAuthenticated, user, isAuthor: currentUserIsAuthor, isAdmin } = useAuth();
+  const { fetchWithAuth } = useAuthFetch();
   
   const postId = params.id as string;
   const [post, setPost] = useState<Post | null>(null);
@@ -104,16 +106,8 @@ export default function BlogDetailPage() {
     setSubmittingComment(true);
 
     try {
-      const {
-        data: { session },
-      } = await (await import("@/app/lib/supabase")).supabase.auth.getSession();
-
-      const response = await fetch("/api/comments", {
+      const response = await fetchWithAuth("/api/comments", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || ""}`,
-        },
         body: JSON.stringify({
           post_id: postId,
           comment_text: commentText,
@@ -130,7 +124,7 @@ export default function BlogDetailPage() {
         alert(data.error || "Failed to submit comment");
       }
     } catch (err) {
-      alert("Error submitting comment");
+      alert(err instanceof Error ? err.message : "Error submitting comment");
     } finally {
       setSubmittingComment(false);
     }
@@ -140,24 +134,18 @@ export default function BlogDetailPage() {
     if (!confirm("Are you sure you want to delete this post?")) return;
 
     try {
-      const {
-        data: { session },
-      } = await (await import("@/app/lib/supabase")).supabase.auth.getSession();
-
-      const response = await fetch(`/api/posts/${postId}`, {
+      const response = await fetchWithAuth(`/api/posts/${postId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${session?.access_token || ""}`,
-        },
       });
 
       if (response.ok) {
         router.push("/");
       } else {
-        alert("Failed to delete post");
+        const data = await response.json();
+        alert(data.error || "Failed to delete post");
       }
     } catch (err) {
-      alert("Error deleting post");
+      alert(err instanceof Error ? err.message : "Error deleting post");
     }
   };
 
