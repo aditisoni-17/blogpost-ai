@@ -18,7 +18,7 @@ export default function EditPostPage() {
   const router = useRouter();
   const params = useParams();
   const postId = params.id as string;
-  const { isAuthenticated, user, isAuthor, isAdmin } = useAuth();
+  const { isAuthenticated, user, isAdmin } = useAuth();
   const { fetchWithAuth } = useAuthFetch();
 
   const [post, setPost] = useState<Post | null>(null);
@@ -193,7 +193,7 @@ export default function EditPostPage() {
             rows={16}
           />
           <p className="mt-2 text-sm text-gray-600">
-            💡 Note: Updating the content will regenerate the AI summary
+            AI summaries are generated when a post is created and then stored for reuse.
           </p>
         </div>
 

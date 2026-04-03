@@ -2,7 +2,6 @@
 
 import { useAuth } from "@/app/context/AuthContext";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 export default function AdminDashboard() {
   const { isAdmin, loading } = useAuth();
@@ -13,7 +12,7 @@ export default function AdminDashboard() {
 
   if (!isAdmin) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <div className="mx-auto max-w-3xl rounded-[2rem] border border-red-200 bg-red-50 px-6 py-5 text-red-700">
         Access Denied: Admin privileges required
       </div>
     );
@@ -21,72 +20,70 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold">⚙️ Admin Dashboard</h1>
+      <div>
+        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
+          Administration
+        </p>
+        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
+          Admin Dashboard
+        </h1>
+        <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
+          Review moderation tasks, verify role-based access, and move quickly to the core areas of the platform.
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Statistics Card */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold mb-4">📊 Statistics</h2>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Total Posts</span>
-              <span className="font-bold">Loading...</span>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="surface-card rounded-[2rem] p-6">
+          <h2 className="text-xl font-semibold text-slate-900">Admin access</h2>
+          <div className="mt-5 space-y-3">
+            <div className="flex justify-between rounded-2xl bg-slate-50 px-4 py-3">
+              <span className="text-slate-600">Post moderation</span>
+              <span className="font-medium text-slate-900">Enabled</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Total Comments</span>
-              <span className="font-bold">Loading...</span>
+            <div className="flex justify-between rounded-2xl bg-slate-50 px-4 py-3">
+              <span className="text-slate-600">Comment review</span>
+              <span className="font-medium text-slate-900">Enabled</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Pending Comments</span>
-              <span className="font-bold text-yellow-600">Loading...</span>
+            <div className="flex justify-between rounded-2xl bg-slate-50 px-4 py-3">
+              <span className="text-slate-600">Role enforcement</span>
+              <span className="font-medium text-slate-900">Active</span>
             </div>
           </div>
         </div>
 
-        {/* Quick Actions Card */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold mb-4">🔧 Quick Actions</h2>
-          <div className="space-y-2">
+        <div className="surface-card rounded-[2rem] p-6">
+          <h2 className="text-xl font-semibold text-slate-900">Quick actions</h2>
+          <div className="mt-5 space-y-3">
             <Link
               href="/admin/comments"
-              className="block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-center"
+              className="block rounded-full bg-blue-700 px-4 py-3 text-center text-sm font-medium text-white hover:bg-blue-800"
             >
-              💬 Moderate Comments
+              Moderate comments
             </Link>
             <Link
-              href="/admin/users"
-              className="block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-center"
+              href="/"
+              className="block rounded-full border border-slate-200 px-4 py-3 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
-              👥 Manage Users
+              Review published posts
             </Link>
             <Link
-              href="/admin/posts"
-              className="block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-center"
+              href="/blog/create"
+              className="block rounded-full border border-slate-200 px-4 py-3 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
-              📝 Manage Posts
+              Create a post
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Info Cards */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="font-bold text-blue-900 mb-2">📋 Admin Functions</h3>
-        <ul className="text-blue-800 text-sm space-y-1">
-          <li>✅ View and manage all blog posts</li>
-          <li>✅ Approve or reject pending comments</li>
-          <li>✅ Manage user roles (viewer, author, admin)</li>
-          <li>✅ View platform analytics and statistics</li>
-          <li>✅ Delete or moderate inappropriate content</li>
+      <div className="surface-card rounded-[2rem] p-6">
+        <h3 className="text-lg font-semibold text-slate-900">Admin responsibilities</h3>
+        <ul className="mt-4 space-y-2 text-sm text-slate-600">
+          <li>Review and approve or reject pending comments.</li>
+          <li>Verify that author and viewer permissions are enforced correctly.</li>
+          <li>Access any post for moderation and content review.</li>
+          <li>Use the public listing to inspect search, pagination, and summaries.</li>
         </ul>
-      </div>
-
-      {/* Coming Soon */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-        <h3 className="font-bold text-yellow-900 mb-2">🚀 Coming Soon</h3>
-        <p className="text-yellow-800 text-sm">
-          Detailed admin pages for specific features are being developed. Use the quick actions above to access key functions.
-        </p>
       </div>
     </div>
   );

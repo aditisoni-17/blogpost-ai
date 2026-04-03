@@ -1,511 +1,179 @@
-# 📝 BlogPost AI - Production-Ready Blogging Platform
+# BlogPost AI
 
-<div align="center">
+A full-stack blogging platform built with Next.js and Supabase. It supports authentication, role-based access, post creation and editing, comments with moderation, search, pagination, and AI-generated summaries for posts.
 
-**An intelligent, full-stack blogging platform with AI-powered summaries, role-based access control, and security-first architecture.**
+## Project Overview
 
-![Next.js](https://img.shields.io/badge/Next.js-16.2-black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green)
-![Security](https://img.shields.io/badge/Security-Audited-success)
+This project was built for the Hivon Automations LLP assignment using Next.js for both frontend and backend, Supabase for authentication and database access, and Google AI for post summaries.
 
-**[Overview](#overview) • [Tech Stack](#tech-stack) • [Setup](#setup) • [Security](#security) • [Interviews](./INTERVIEW_READY.md)**
-
-</div>
-
-
-
----
-
-## Overview
-
-**BlogPost AI** is a production-grade blogging platform that demonstrates modern full-stack development with:
-
-- 🤖 **AI Integration** - Auto-generates 100-150 word summaries (Google Gemini 1.5 Flash)
-- 🔐 **Security-First** - Server-only API keys, input sanitization, rate limiting, security headers
-- 👥 **Role-Based Access** - 3-tier permissions (Viewer/Author/Admin) with enforcement at API & database layers
-- 💰 **Cost Optimized** - Rate limiting keeps AI spend at $30/month instead of $500+
-- 🏗️ **Clean Architecture** - 6 modular directories with clear separation of concerns
-- ⚡ **Async Processing** - AI summaries don't block post creation
-- 📱 **Type-Safe** - TypeScript strict mode, comprehensive error handling
-
-### Key Features
-
-✅ AI-Powered Summaries (async, rate-limited)  
-✅ Full-Text Search (PostgreSQL FTS)  
-✅ Comments System (with approval workflow)  
-✅ Image Uploads (Supabase Storage)  
-✅ Admin Dashboard (metrics & moderation)  
-✅ Pagination (efficient listing)  
-✅ JWT Authentication (Supabase Auth)  
-
----
+The platform supports three roles:
+- `viewer`: can browse posts, read summaries, and add comments
+- `author`: can create posts and edit or delete their own posts
+- `admin`: can access all posts and moderate comments
 
 ## Tech Stack
 
-| Layer | Technology | Why |
-|-------|-----------|-----|
-| **Frontend** | Next.js 14 + React 19 | Server/client components, App Router |
-| **Styling** | Tailwind CSS | Utility-first, responsive |
-| **Backend** | Next.js API Routes | Integrated, no extra server |
-| **Database** | Supabase PostgreSQL | Managed, RLS policies, real-time |
-| **Auth** | Supabase JWT | Email/password, sessions |
-| **Storage** | Supabase Object Storage | Images, scalable |
-| **AI** | Google Gemini 1.5 Flash | Cost-effective summaries |
-| **DevOps** | Docker + TypeScript | Containerized, type-safe |
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS
+- Supabase Auth
+- Supabase PostgreSQL
+- Google AI API
+- Git and GitHub
 
----
+## Implemented Features
 
-## Architecture
+### Authentication and Roles
+- Email/password authentication with Supabase
+- Session-aware client auth state
+- Role-based access for viewer, author, and admin
+- Protected author/admin actions enforced in API routes
 
-### System Design
+### Posts
+- Paginated blog listing
+- Search by title, body, and summary
+- Post detail page with featured image, summary, and content
+- Create post page for authors/admins
+- Edit and delete for owner/admin
 
-```
-┌────────────────────────────────────────┐
-│   Browser (React Components)            │
-│   - Server Components (optimize)        │
-│   - Client Components (interactivity)   │
-│   - Context API (auth state)            │
-└──────────────┬─────────────────────────┘
-               │ HTTP/REST
-               ▼
-┌────────────────────────────────────────┐
-│   API Routes + Middleware               │
-│   - JWT validation                      │
-│   - Role-based authorization            │
-│   - Input validation & sanitization     │
-│   - Error handling & logging            │
-└──────────────┬──────────────┬───────────┘
-               │              │
-        ┌──────▼──────┐ ┌────▼──────────┐
-        │  Supabase   │ │  Google AI    │
-        │  PostgreSQL │ │  API          │
-        │  + Auth     │ │  (Summaries)  │
-        │  + Storage  │ │               │
-        └─────────────┘ └────────────────┘
-```
+### Comments
+- View approved comments on post detail pages
+- Add comments as authenticated users
+- Admin moderation routes for approving/rejecting comments
+- Shared comments UI with empty, loading, and validation states
 
-### Module Organization
+### AI Summary
+- Summary generated on post creation
+- Summary stored in the database and reused later
+- Summary shown on listing and detail pages
+- Server-side only API key usage
 
-```
-lib/
-├── database/        ← Data access layer
-│   ├── supabase.ts     (Client initialization)
-│   ├── types.ts        (TypeScript interfaces)
-│   └── index.ts        (Exports)
-│
-├── auth/            ← Authentication
-│   ├── auth.ts         (JWT validation, role checking)
-│   └── index.ts
-│
-├── validators/      ← Input validation (no DB access)
-│   ├── postValidation.ts
-│   ├── commentValidation.ts
-│   └── index.ts
-│
-├── services/        ← Business logic
-│   ├── postService.ts      (CRUD operations)
-│   ├── commentService.ts   (Comment workflows)
-│   └── index.ts
-│
-├── ai/              ← AI integration
-│   ├── ai.ts               (generateSummary)
-│   ├── aiRateLimit.ts      (Rate limiting)
-│   ├── aiMonitoring.ts     (Cost tracking)
-│   └── index.ts
-│
-├── security/        ← Security utilities
-│   ├── sanitization.ts     (XSS & injection prevention)
-│   ├── headers.ts          (CSP, CORS, rate limiting)
-│   └── index.ts
-│
-└── index.ts         ← Main barrel export
-```
+## AI Tool Usage
 
-**Why This Structure:**
-- Single Responsibility - Each module has one job
-- Testability - Services work without API routes
-- Scalability - Easy to extract to microservices
-- Clarity - New developer finds code quickly
+This project used an AI coding assistant during development and debugging.
 
+### Tool Used
+- Codex-style AI coding assistant
 
+### Why It Was Chosen
+- Fast for inspecting a medium-sized Next.js codebase
+- Helpful for tracing import/export mismatches
+- Useful for making small, safe UI refinements without rewriting the project
+- Good for checking consistency across API routes, pages, and shared utilities
 
----
+### How It Helped
+- Fixed AI summary flow issues and server-only environment handling
+- Improved UI structure across listing, auth, create post, and post detail pages
+- Helped identify duplicate dead code in `app/lib`
+- Verified build output after each cleanup step
 
-##  Role-Based Access Control
+## Cost Optimization
 
-### Permission Matrix
+The AI summary feature includes a few simple cost-control decisions:
 
-```
-┌─────────────────────────────────────────────────┐
-│        Three-Tier Access Control System        │
-├──────────────┬──────────┬──────────┬─────────────┤
-│ Operation    │ Viewer   │ Author   │ Admin       │
-├──────────────┼──────────┼──────────┼─────────────┤
-│ View Posts   │    ✅    │    ✅    │     ✅      │
-│ Search       │    ✅    │    ✅    │     ✅      │
-│ Comment      │    ✅    │    ✅    │     ✅      │
-│ Create Post  │    ❌    │    ✅    │     ✅      │
-│ Edit Own     │    ❌    │    ✅    │     ✅      │
-│ Edit Any     │    ❌    │    ❌    │     ✅      │
-│ Approve Cmnt │    ❌    │    ❌    │     ✅      │
-│ Manage Users │    ❌    │    ❌    │     ✅      │
-└──────────────┴──────────┴──────────┴─────────────┘
-```
+- Summaries are generated once when a post is created
+- Generated summaries are stored in the database
+- Stored summaries are reused on the listing and detail pages
+- Duplicate summary generation is skipped if a summary already exists
+- Server-side rate limiting utilities are included for AI calls
+- The Google AI key stays on the server and is never exposed to the frontend
 
-### Implementation
+## Setup
 
-```typescript
-// API Layer - Fast rejection
-const auth = await verifyRole(request, ["author", "admin"]);
-if (!auth.valid) return errorResponse("Forbidden", 403);
+### 1. Clone the repository
 
-// Database Layer - Cannot be bypassed
-CREATE POLICY "Authors can edit own posts"
-  ON posts
-  USING (auth.uid() = author_id OR role = 'admin');
-```
-
-**Defense in Depth:** Even if API is compromised, database RLS prevents unauthorized access.
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+
-- Supabase account
-- Google AI API key
-
-### Setup
-
-1. **Clone & Install**
 ```bash
 git clone https://github.com/aditisoni-17/blogpost-ai.git
 cd blogpost-ai
+```
+
+### 2. Install dependencies
+
+```bash
 npm install
 ```
 
-2. **Configure Environment** (`.env.local`)
+### 3. Create environment file
+
+Create `.env.local` using the values from `.env.example`.
+
+Required variables:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_key
-NEXT_PUBLIC_GOOGLE_AI_API_KEY=your_google_ai_key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+GOOGLE_AI_API_KEY=your_google_ai_key
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-3. **Setup Database**
-   - See [SUPABASE_SETUP.md](./SUPABASE_SETUP.md)
-   - Run SQL migrations
-   - Create storage bucket
+### 4. Set up Supabase schema
 
-4. **Run Development Server**
+Run the SQL migration from:
+
+- `supabase/migrations/001_initial_schema.sql`
+
+### 5. Run locally
+
 ```bash
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000)
+Open:
 
----
+- `http://localhost:3000`
 
-## 📚 Database Schema
+### 6. Production build
 
-### Users Table
-- `id` (UUID) - Primary Key  
-- `email` (VARCHAR) - Unique  
-- `name` (VARCHAR)  
-- `role` (ENUM: viewer, author, admin)  
-- `created_at`, `updated_at`  
-
-### Posts Table
-- `id` (UUID) - Primary Key
-- `title` (VARCHAR) - Post title
-- `body` (TEXT) - Full content
-- `image_url` (VARCHAR) - Featured image
-- `summary` (TEXT) - AI-generated summary
-- `author_id` (UUID) - FK to users
-- `view_count` (INTEGER)
-- `is_published` (BOOLEAN)
-- `created_at`, `updated_at`
-
-### Comments Table
-- `id` (UUID) - Primary Key
-- `post_id` (UUID) - FK to posts
-- `user_id` (UUID) - FK to users
-- `comment_text` (TEXT)
-- `is_approved` (BOOLEAN) - Requires admin approval
-- `created_at`, `updated_at`
-
----
-
-## 📡 API Endpoints
-
-### Auth
-```
-POST   /api/auth/login              # Login user
-POST   /api/auth/register           # Register new user
-POST   /api/auth/logout             # Logout
-```
-
-### Posts
-```
-GET    /api/posts                   # List posts (paginated)
-POST   /api/posts                   # Create post (auth required)
-GET    /api/posts/[id]              # Get post detail
-PUT    /api/posts/[id]              # Update post (author/admin)
-DELETE /api/posts/[id]              # Delete post (author/admin)
-```
-
-### Comments
-```
-GET    /api/comments?postId=xxx     # Get approved comments
-POST   /api/comments                # Create comment (auth required)
-```
-
-### Search
-```
-GET    /api/search?q=keyword        # Full-text search
-```
-
----
-
-## 🤖 AI Integration
-
-### Summary Generation
-- **Trigger**: When post is created or edited
-- **API**: Google Gemini API
-- **Prompt**: "Generate 200-word summary of this blog post"
-- **Storage**: Cached in `posts.summary` field
-- **Cost Optimization**: One-time generation per post
-
-### Flow
-```
-User creates post 
-  → Post saved to DB
-    → AI summary triggered (async)
-      → Google AI API called
-        → Summary saved to DB
-          → Displayed on post listing
-```
-
----
-
-## 🔐 Security
-
-### Authentication
-- JWT-based with Supabase Auth
-- Email/password signup & login
-- HTTP-only cookie storage
-
-### Authorization
-- Role-based access control on API
-- Row-Level Security (RLS) on database
-- Users can only edit own posts
-- Admins have full access
-
-### Data Protection
-- Password hashing (bcrypt)
-- Database encryption at rest
-- CORS protection
-
----
-
-## 📂 Project Structure
-
-```
-blogpost-ai/
-├── app/
-│   ├── page.tsx                    # Home (post listing)
-│   ├── layout.tsx                  # Root layout
-│   ├── auth/
-│   │   ├── login/page.tsx
-│   │   └── register/page.tsx
-│   ├── blog/
-│   │   ├── create/page.tsx
-│   │   └── [id]/
-│   │       ├── page.tsx            # Post detail
-│   │       └── edit/page.tsx
-│   ├── admin/
-│   │   └── dashboard/page.tsx
-│   ├── api/
-│   │   ├── auth/                   # Login, Register, Logout
-│   │   ├── posts/                  # CRUD operations
-│   │   ├── comments/               # Manage comments
-│   │   └── search/                 # Full-text search
-│   ├── components/                 # Reusable components
-│   ├── context/                    # Auth context
-│   ├── lib/                        # Utilities
-│   └── globals.css
-├── public/                         # Static assets
-├── supabase/
-│   └── migrations/                 # Database schema
-├── .env.local                      # Environment variables
-└── README.md
-```
-
----
-
-## 🎓 Key Implementation Details
-
-### 1. Authentication Flow
-```
-User enters email/password
-  → API calls Supabase Auth
-    → JWT token generated
-      → Token stored in browser
-        → Subsequent requests include token
-```
-
-### 2. Post Creation with AI
-```
-Author clicks "Create Post"
-  → Form submits to /api/posts
-    → Verifies author role
-      → Saves post to database
-        → Calls Google AI API (async)
-          → Generates summary
-            → Saves summary to DB
-              → User sees post with auto-summary
-```
-
-### 3. Role-Based Access
-```
-Request arrives at API
-  → Middleware checks JWT token
-    → Gets user role from database
-      → Verifies required role
-        → Grants/denies access
-          → Returns appropriate status (200/403)
-```
-
-### 4. Comments Workflow
-```
-User submits comment
-  → Saved with is_approved = false
-    → Admin sees pending comment
-      → Admin approves
-        → Comment visible to others
-          → Users can discuss
-```
-
----
-
-## 🧪 Testing Checklist
-
-- [ ] Register new account
-- [ ] Login with credentials
-- [ ] View all posts on home page
-- [ ] Search posts by keyword
-- [ ] Create new post (as author)
-- [ ] AI summary generates automatically
-- [ ] Edit own post
-- [ ] Delete own post
-- [ ] Comment on post
-- [ ] Admin approves comment
-- [ ] Logout and login again
-
----
-
-## 🐛 Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| 401 Unauthorized | Check JWT token in Authorization header |
-| 403 Forbidden | User role insufficient for operation |
-| RLS policy error | Verify user is authenticated and role is correct |
-| AI summary null | Google API might be rate-limited or invalid |
-| Search not working | Ensure Supabase indexes are created |
-| Images not showing | Verify image URL is accessible |
-
----
-
-## 🚀 Deployment
-
-### Build
 ```bash
 npm run build
 ```
 
-### Production
-```bash
-npm run start
-```
+## Core Flow Summary
 
-### Docker Deployment
-```bash
-docker build -t blogpost-ai .
-docker run -p 3000:3000 blogpost-ai
-```
+### Auth Flow
+- User registers or logs in with Supabase Auth
+- Client session is read through the auth context
+- Protected routes/actions use authenticated API calls with bearer tokens
 
----
+### Role-Based Access
+- Viewer: read posts and comment
+- Author: create/edit/delete own posts
+- Admin: moderate comments and manage any post
 
-## 📊 Performance Optimizations
+### Post Creation Flow
+- Author fills in title, image URL, and content
+- API validates input
+- Post is stored in Supabase
+- AI summary is generated and stored
 
-- Pagination (10 posts per page default)
-- Database indexes on frequently queried fields
-- Image optimization with Next.js Image component
-- API response caching with proper headers
--AI summaries cached in database
+### AI Summary Flow
+- Server-side function calls Google AI API
+- Summary is returned and saved to the post record
+- Listing/detail pages display the saved summary
 
----
+## Current Project Status
 
-## 🛠️ Development Tools Used
+Working and verified:
+- Auth pages
+- Post listing
+- Post detail
+- Create post
+- Search and pagination
+- AI summary generation flow
+- Comments flow
+- Production build
 
-**AI Coding Assistants:**
-- Cursor / GitHub Copilot for code generation & debugging
-- AI for architecture planning & documentation
-- Windsurf for complex workflow generation
+Still external to this repository:
+- VPS deployment and public live URL setup
 
-**Why These Tools:**
-- ⚡ **Speed**: Generated code 3x faster than manual typing
-- 🎯 **Accuracy**: AI suggests best practices automatically
-- 🐛 **Debugging**: AI explains errors and suggests fixes
-- 📚 **Documentation**: Generated comprehensive docs
-- 💡 **Architecture**: AI recommended optimal database design
+## Repository Notes
 
----
+- `.env.local` is ignored and should never be committed
+- `.env.example` is included for setup guidance
+- The codebase has been cleaned to reduce duplicate unused files under `app/lib`
 
-## 📝 Assignment Submission
+## GitHub
 
-### Submitted Files
-- ✅ GitHub Repository (https://github.com/aditisoni-17/blogpost-ai)
-- ✅ Complete Source Code
-- ✅ Database Schema & Migrations
-- ✅ API Documentation
-- ✅ Setup Instructions
-- ✅ Architecture Explanation
-
-### Key Achievements
-- ✅ Full-stack blogging platform
-- ✅ AI integration (Google Gemini API)
-- ✅ Role-based access control (3 roles)
-- ✅ Search + Pagination
-- ✅ Comments with approval
-- ✅ Admin dashboard
-- ✅ Type-safe with TypeScript
-- ✅ Responsive UI with Tailwind CSS
-- ✅ Comprehensive documentation
-
-### Evaluation Criteria Met
-| Criteria | Status | Details |
-|----------|--------|---------|
-| AI Tool Usage | ✅ | Used Copilot for code generation & architecture |
-| Code Quality | ✅ | TypeScript, proper error handling, clean structure |
-| Role-Based Access | ✅ | 3 roles with granular permissions |
-| Database Design | ✅ | Normalized schema with RLS policies |
-| AI Integration | ✅ | Google Gemini API for 200-word summaries |
-| Deployment Ready | ✅ | Docker + environment config provided |
-| Code Understanding | ✅ | All technical decisions documented |
-
----
-
-## 📄 License
-© 2024 Hivon Automations LLP. All rights reserved.
-
----
-
-**Status**: ✅ Production Ready  
-**Last Updated**: April 2, 2026  
-**Next.js Version**: 14+  
-**Node Version**: 18+
+- Repository: https://github.com/aditisoni-17/blogpost-ai
