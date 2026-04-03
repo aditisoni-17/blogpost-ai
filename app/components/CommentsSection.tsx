@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAuthFetch } from "@/app/hooks/useAuthFetch";
 import Link from "next/link";
@@ -44,7 +44,7 @@ export function CommentsSection({
   comments: initialComments,
   onCommentAdded,
 }: CommentsSectionProps) {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isAdmin } = useAuth();
   const { fetchWithAuth } = useAuthFetch();
 
   // State
@@ -54,6 +54,11 @@ export function CommentsSection({
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setComments(initialComments);
+  }, [initialComments]);
 
   // Validation
   const validateComment = useCallback((text: string): string | undefined => {
@@ -76,6 +81,7 @@ export function CommentsSection({
   const handleChange = (value: string) => {
     setForm({ text: value });
     setSubmitError(null);
+    setSubmitMessage(null);
 
     if (touched.text) {
       const error = validateComment(value);
@@ -139,6 +145,9 @@ export function CommentsSection({
       setForm({ text: "" });
       setTouched({});
       setErrors({});
+      setSubmitMessage(
+        data.message || "Comment submitted successfully! It will appear after admin approval."
+      );
 
       // Add to comments if approved, otherwise add temp indicator
       if (onCommentAdded) {
@@ -178,30 +187,51 @@ export function CommentsSection({
   const isFormValid = form.text.trim() && !errors.text;
 
   return (
-    <section className="border-t pt-8 mt-12">
-      <h2 className="text-2xl font-bold mb-6">💬 Comments ({comments.length})</h2>
+    <section className="surface-card mt-12 rounded-[2rem] p-6 md:p-8">
+      <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
+            Discussion
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+            Comments ({comments.length})
+          </h2>
+        </div>
+        <p className="text-sm text-slate-500">
+          Approved comments appear below after moderation.
+        </p>
+      </div>
 
       {/* Comment Form */}
       {isAuthenticated ? (
-        <div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-          <h3 className="font-semibold text-gray-900 mb-4">Add Your Comment</h3>
+        <div className="mb-8 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-6">
+          <h3 className="mb-4 text-lg font-semibold text-slate-900">Add your comment</h3>
 
           {submitError && (
             <div
-              className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm"
+              className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
               role="alert"
             >
               {submitError}
             </div>
           )}
 
+          {submitMessage && (
+            <div
+              className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+              role="status"
+            >
+              {submitMessage}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <div className="flex justify-between items-baseline mb-2">
-                <label className="block text-sm font-medium text-gray-700">
+              <div className="mb-2 flex justify-between gap-3">
+                <label className="block text-sm font-medium text-slate-700">
                   Your Comment
                 </label>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-slate-500">
                   {stats.length} / {COMMENT_VALIDATION.commentText.maxLength}
                 </span>
               </div>
@@ -211,10 +241,10 @@ export function CommentsSection({
                 onChange={(e) => handleChange(e.target.value)}
                 onBlur={handleBlur}
                 placeholder="Share your thoughts about this post..."
-                className={`w-full px-4 py-3 border rounded focus:outline-none focus:ring-2 transition ${
+                className={`w-full rounded-[1.5rem] border px-4 py-3 text-slate-900 outline-none focus:ring-4 transition ${
                   touched.text && errors.text
-                    ? "border-red-500 focus:ring-red-500"
-                    : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    ? "border-red-300 bg-red-50/60 focus:border-red-500 focus:ring-red-100"
+                    : "border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-100"
                 }`}
                 rows={4}
                 aria-invalid={touched.text && !!errors.text}
@@ -222,12 +252,12 @@ export function CommentsSection({
               />
 
               {/* Progress bar */}
-              <div className="mt-2 h-1 bg-gray-200 rounded overflow-hidden">
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200">
                 <div
                   className={`h-full transition-all ${
                     stats.length > COMMENT_VALIDATION.commentText.maxLength * 0.9
                       ? "bg-red-500"
-                      : "bg-blue-500"
+                      : "bg-blue-600"
                   }`}
                   style={{
                     width: `${Math.min(
@@ -240,14 +270,14 @@ export function CommentsSection({
 
               {/* Error message */}
               {touched.text && errors.text && (
-                <p id="comment-error" className="mt-2 text-sm text-red-600">
+                <p id="comment-error" className="mt-3 text-sm text-red-600">
                   {errors.text}
                 </p>
               )}
 
               {/* Stats */}
               {!errors.text && form.text.trim() && (
-                <p className="mt-2 text-sm text-gray-600">
+                <p className="mt-3 text-sm text-slate-500">
                   {stats.words} words
                 </p>
               )}
@@ -257,7 +287,7 @@ export function CommentsSection({
               <button
                 type="submit"
                 disabled={loading || !isFormValid}
-                className="px-6 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="rounded-full bg-blue-700 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? "Posting..." : "Post Comment"}
               </button>
@@ -268,25 +298,26 @@ export function CommentsSection({
                     setForm({ text: "" });
                     setTouched({});
                     setErrors({});
+                    setSubmitMessage(null);
                   }}
-                  className="px-6 py-2 bg-gray-300 text-gray-800 rounded font-medium hover:bg-gray-400 transition"
+                  className="rounded-full border border-slate-200 px-6 py-2.5 text-sm font-medium text-slate-700 hover:bg-white"
                 >
                   Clear
                 </button>
               )}
             </div>
 
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-slate-500">
               Your comment will be visible after admin approval.
             </p>
           </form>
         </div>
       ) : (
-        <div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200 text-center">
-          <p className="text-gray-700 mb-3">Please login to comment</p>
+        <div className="mb-8 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-6 text-center">
+          <p className="mb-3 text-slate-700">Please login to comment</p>
           <Link
             href="/auth/login"
-            className="inline-block px-6 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700"
+            className="inline-flex rounded-full bg-blue-700 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-800"
           >
             Login here
           </Link>
@@ -296,22 +327,22 @@ export function CommentsSection({
       {/* Comments List */}
       <div className="space-y-4">
         {comments.length === 0 ? (
-          <p className="text-gray-600 text-center py-8">
+          <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-slate-600">
             No approved comments yet. Be the first to comment!
-          </p>
+          </div>
         ) : (
           comments.map((comment) => (
             <div
               key={comment.id}
-              className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-sm transition"
+              className="rounded-[1.5rem] border border-slate-200 bg-white p-5 transition hover:shadow-sm"
             >
               {/* Comment header */}
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <p className="font-semibold text-gray-900">
+                  <p className="font-semibold text-slate-900">
                     {comment.users?.name || "Anonymous"}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-slate-500">
                     {new Date(comment.created_at).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
@@ -322,10 +353,10 @@ export function CommentsSection({
 
                 {/* Delete button - show for comment author or admin */}
                 {isAuthenticated &&
-                  (user?.id === comment.user_id || user?.role === "admin") && (
+                  (user?.id === comment.user_id || isAdmin) && (
                     <button
                       onClick={() => handleDeleteComment(comment.id)}
-                      className="px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition"
+                      className="rounded-full px-3 py-1 text-sm text-red-600 transition hover:bg-red-50 hover:text-red-700"
                       title="Delete comment"
                     >
                       🗑️
@@ -334,7 +365,7 @@ export function CommentsSection({
               </div>
 
               {/* Comment text */}
-              <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+              <p className="whitespace-pre-wrap leading-relaxed text-slate-700">
                 {comment.comment_text}
               </p>
             </div>
