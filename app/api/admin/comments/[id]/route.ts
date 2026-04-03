@@ -5,13 +5,11 @@
 
 import { NextRequest } from "next/server";
 import {
-  errorResponse,
-  successResponse,
-  verifyRole,
   validateCommentId,
   approveComment,
   rejectComment,
 } from "@/app/lib";
+import { errorResponse, successResponse, verifyRole } from "@/app/lib/middleware";
 
 export async function POST(
   request: NextRequest,

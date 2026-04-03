@@ -1,10 +1,6 @@
 import { NextRequest } from "next/server";
-import {
-  errorResponse,
-  successResponse,
-  verifyRole,
-} from "@/app/lib";
 import { supabase } from "@/app/lib";
+import { errorResponse, successResponse, verifyRole } from "@/app/lib/middleware";
 
 // GET /api/posts/[id] - Get a specific post
 export async function GET(
@@ -94,14 +90,7 @@ export async function PUT(
       return errorResponse("Title and body are required", 400);
     }
 
-    // ✅ Get current post to check if body changed
-    const { data: currentPost } = await supabase
-      .from("posts")
-      .select("body, summary")
-      .eq("id", postId)
-      .single();
-
-    // Update post
+    // Update post (no AI summary regeneration on update)
     const { data: updatedPost, error: updateError } = await supabase
       .from("posts")
       .update({
@@ -118,34 +107,9 @@ export async function PUT(
       return errorResponse("Failed to update post", 500);
     }
 
-    // ✅ ONLY regenerate summary if body actually changed
-    let summaryUpdated = false;
-    if (body !== currentPost?.body) {
-      console.log(
-        `[AI] Post body changed, regenerating summary for post ${postId}`
-      );
-
-      const { generateSummary } = await import("@/app/lib/ai");
-      const summary = await generateSummary(body);
-
-      if (summary) {
-        await supabase
-          .from("posts")
-          .update({ summary })
-          .eq("id", postId);
-
-        updatedPost.summary = summary;
-        summaryUpdated = true;
-      }
-    } else {
-      // Keep existing summary
-      updatedPost.summary = currentPost?.summary || null;
-    }
-
     return successResponse({
       message: "Post updated successfully",
       post: updatedPost,
-      summaryUpdated,
     });
   } catch (error) {
     console.error("PUT post error:", error);

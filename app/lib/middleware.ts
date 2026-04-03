@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+import { supabaseService } from "@/app/lib/supabaseServer";
 
 export async function verifyAuth(request: NextRequest) {
   const authHeader = request.headers.get("Authorization");
@@ -12,7 +9,7 @@ export async function verifyAuth(request: NextRequest) {
   }
 
   const token = authHeader.substring(7);
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const supabase = supabaseService;
 
   try {
     const {
@@ -45,7 +42,7 @@ export async function verifyRole(
     };
   }
 
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const supabase = supabaseService;
 
   try {
     const { data, error } = await supabase

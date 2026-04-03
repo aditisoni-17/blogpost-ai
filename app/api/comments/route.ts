@@ -11,13 +11,11 @@
 
 import { NextRequest } from "next/server";
 import {
-  errorResponse,
-  successResponse,
-  verifyAuth,
   validateCreateCommentInput,
   createComment,
   getApprovedCommentsByPost,
 } from "@/app/lib";
+import { errorResponse, successResponse, verifyAuth } from "@/app/lib/middleware";
 
 /**
  * GET /api/comments

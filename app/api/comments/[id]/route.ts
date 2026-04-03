@@ -5,13 +5,10 @@
 
 import { NextRequest } from "next/server";
 import {
-  errorResponse,
-  successResponse,
-  verifyAuth,
-  verifyRole,
   validateCommentId,
   deleteComment,
 } from "@/app/lib";
+import { errorResponse, successResponse, verifyAuth, verifyRole } from "@/app/lib/middleware";
 
 export async function DELETE(
   request: NextRequest,

@@ -1,11 +1,10 @@
 import { NextRequest } from "next/server";
-import { errorResponse, successResponse, verifyAuth } from "@/app/lib";
+import { errorResponse, successResponse, verifyAuth } from "@/app/lib/middleware";
 import { 
-  canGenerateSummary, 
-  logAICall, 
-  getRemainingCalls,
-  generateSummary 
+  generateSummary,
 } from "@/app/lib/ai";
+import { canGenerateSummary, getRemainingCalls } from "@/app/lib/aiRateLimit";
+import { logAICall } from "@/app/lib/aiMonitoring";
 
 /**
  * POST /api/ai/summarize
@@ -48,10 +47,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. ✅ Check rate limit before processing
-    const canGenerate = await canGenerateSummary(user.id);
+    const canGenerate = canGenerateSummary(user.id);
 
     if (!canGenerate) {
-      const remaining = await getRemainingCalls(user.id);
+      const remaining = getRemainingCalls(user.id);
       return errorResponse(
         `Rate limit exceeded. You can generate ${remaining} more summaries today. Please try again tomorrow.`,
         429
@@ -93,7 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. ✅ Log the API call for monitoring and cost tracking
-    await logAICall(
+    logAICall(
       postId || "unknown",
       user.id,
       true,
@@ -101,7 +100,7 @@ export async function POST(request: NextRequest) {
     );
 
     // 6. Get remaining calls for user
-    const remaining = await getRemainingCalls(user.id);
+    const remaining = getRemainingCalls(user.id);
 
     return successResponse({
       message: "Summary generated successfully",

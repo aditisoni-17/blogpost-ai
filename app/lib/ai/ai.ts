@@ -107,8 +107,9 @@ REQUIREMENTS:
 - Length: 100-150 words (concise, not verbose)
 - Format: One paragraph, engaging and scannable
 - Style: Conversational, friendly, accessible tone
-- Content: Main topic + 2-3 key points + key takeaway
-- Quality: Clear, grammatically perfect, no jargon
+ * Content: Main topic + 3-4 key points + key takeaway
+ * Quality: Clear, grammatically perfect, no jargon
+ * Length: ~200 words (best effort, 180-220 words)
 - Do NOT include: Meta-commentary, repetition, promotional language, or disclaimers
 
 Blog Post:

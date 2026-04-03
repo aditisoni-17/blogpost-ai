@@ -7,9 +7,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import {
-  errorResponse,
-  successResponse,
-  verifyRole,
   validateCommentId,
   getAllCommentsByPost,
   getUnapprovedComments,
@@ -17,6 +14,7 @@ import {
   rejectComment,
   getCommentStats,
 } from "@/app/lib";
+import { errorResponse, successResponse, verifyRole } from "@/app/lib/middleware";
 
 /**
  * GET /api/admin/comments

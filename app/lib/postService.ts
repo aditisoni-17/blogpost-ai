@@ -132,6 +132,23 @@ async function generateSummaryAsync(
   const startTime = Date.now();
 
   try {
+    // Prevent duplicate AI calls: do not generate if summary already exists
+    const { data: existingPost, error: existingError } = await supabase
+      .from("posts")
+      .select("summary")
+      .eq("id", postId)
+      .single();
+
+    if (existingError) {
+      console.error(`[AI] Failed to fetch existing post ${postId}:`, existingError);
+      return;
+    }
+
+    if (existingPost?.summary) {
+      console.log(`[AI] Summary already exists for post ${postId}, skipping generation.`);
+      return;
+    }
+
     console.log(`[AI] Generating summary for post ${postId}...`);
 
     const summary = await generateSummary(body);

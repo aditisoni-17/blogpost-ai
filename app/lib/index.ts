@@ -70,14 +70,6 @@ export {
 } from "./ai";
 export type { GenerateContentRequest, AICallMetrics } from "./ai";
 
-// Middleware
-export {
-  verifyAuth,
-  verifyRole,
-  successResponse,
-  errorResponse,
-} from  "./middleware";
-
 // Security
 export {
   sanitizeHtml,
