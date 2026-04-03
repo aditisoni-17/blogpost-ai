@@ -211,6 +211,7 @@ export function CommentsSection({
             <div
               className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
               role="alert"
+              aria-live="assertive"
             >
               {submitError}
             </div>
@@ -220,6 +221,7 @@ export function CommentsSection({
             <div
               className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
               role="status"
+              aria-live="polite"
             >
               {submitMessage}
             </div>
@@ -288,6 +290,7 @@ export function CommentsSection({
                 type="submit"
                 disabled={loading || !isFormValid}
                 className="rounded-full bg-blue-700 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-busy={loading}
               >
                 {loading ? "Posting..." : "Post Comment"}
               </button>
