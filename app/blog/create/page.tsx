@@ -39,7 +39,7 @@ interface ValidationErrors {
 
 export default function CreatePostPage() {
   const router = useRouter();
-  const { isAuthenticated, isAuthor } = useAuth();
+  const { isAuthenticated, isAuthor, loading: authLoading } = useAuth();
   const { fetchWithAuth } = useAuthFetch();
 
   // Form state
@@ -133,6 +133,11 @@ export default function CreatePostPage() {
   ) => {
     setForm((prev) => ({ ...prev, [field]: value }));
 
+    if (field === "imageUrl") {
+      setImageFailed(false);
+      setImageLoading(Boolean(value.trim()));
+    }
+
     // Clear error for this field if it passes validation
     if (touched[field]) {
       const error = validateField(field, value);
@@ -221,27 +226,66 @@ export default function CreatePostPage() {
   };
 
   // Access control
+  if (authLoading) {
+    return (
+      <div className="mx-auto w-full max-w-5xl py-8 md:py-12">
+        <div className="surface-card rounded-[2rem] p-8 md:p-10">
+          <div className="h-4 w-32 animate-pulse rounded-full bg-slate-200" />
+          <div className="mt-5 h-10 w-1/2 animate-pulse rounded-full bg-slate-200" />
+          <div className="mt-4 h-4 w-2/3 animate-pulse rounded-full bg-slate-200" />
+          <div className="mt-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+            <div className="space-y-5">
+              <div className="h-14 animate-pulse rounded-3xl bg-slate-200" />
+              <div className="h-14 animate-pulse rounded-3xl bg-slate-200" />
+              <div className="h-72 animate-pulse rounded-3xl bg-slate-200" />
+            </div>
+            <div className="h-72 animate-pulse rounded-3xl bg-slate-200" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
-      <div className="max-w-2xl mx-auto text-center py-12">
-        <p className="text-gray-700 mb-4">Please login to create a post</p>
-        <Link
-          href="/auth/login"
-          className="text-blue-600 hover:underline font-medium"
-        >
-          Login here
-        </Link>
+      <div className="mx-auto w-full max-w-3xl py-12">
+        <div className="surface-card rounded-[2rem] px-6 py-14 text-center md:px-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+            Author access required
+          </p>
+          <h1 className="mt-4 text-3xl font-semibold text-slate-900">
+            Please login to create a post
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-600">
+            Sign in first so the platform can connect your article to your account and permissions.
+          </p>
+          <div className="mt-8">
+            <Link
+              href="/auth/login"
+              className="inline-flex rounded-full bg-blue-700 px-6 py-3 text-sm font-medium text-white hover:bg-blue-800"
+            >
+              Login here
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!isAuthor) {
     return (
-      <div className="max-w-2xl mx-auto text-center py-12">
-        <p className="text-gray-700">
-          Only authors can create posts. Please contact an admin to upgrade your
-          role.
-        </p>
+      <div className="mx-auto w-full max-w-3xl py-12">
+        <div className="surface-card rounded-[2rem] px-6 py-14 text-center md:px-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+            Restricted action
+          </p>
+          <h1 className="mt-4 text-3xl font-semibold text-slate-900">
+            Only authors can create posts
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-600">
+            Your account is active, but it does not have author permissions yet. Contact an admin to upgrade your role.
+          </p>
+        </div>
       </div>
     );
   }
@@ -267,250 +311,259 @@ export default function CreatePostPage() {
     form.body.trim();
 
   return (
-    <div className="max-w-4xl mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8">✍️ Create New Post</h1>
+    <div className="mx-auto w-full max-w-6xl py-6 md:py-10">
+      <div className="mb-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
+          Author workspace
+        </p>
+        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
+          Create a new post
+        </h1>
+        <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
+          Draft a polished article with clear structure, an optional cover image, and a summary generated after publishing.
+        </p>
+      </div>
 
-      {/* Form-level errors */}
       {errors.form && (
         <div
-          className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded"
+          className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700"
           role="alert"
         >
           {errors.form}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Title field */}
-        <div>
-          <div className="flex justify-between items-baseline mb-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Post Title
-              <span className="text-red-500 ml-1">*</span>
-            </label>
-            <span className="text-xs text-gray-500">
-              {stats.title.characters} / {POST_VALIDATION.title.maxLength}
-            </span>
-          </div>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_360px]">
+        <form onSubmit={handleSubmit} className="surface-card rounded-[2rem] p-6 md:p-8">
+          <div className="space-y-8">
+            <div>
+              <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+                <label className="block text-sm font-medium text-slate-700">
+                  Post Title
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+                <span className="text-xs text-slate-500">
+                  {stats.title.characters} / {POST_VALIDATION.title.maxLength}
+                </span>
+              </div>
 
-          <input
-            type="text"
-            value={form.title}
-            onChange={(e) => handleFieldChange("title", e.target.value)}
-            onBlur={() => handleFieldBlur("title")}
-            placeholder="e.g., Getting Started with Next.js 14"
-            className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 transition ${
-              touched.title && errors.title
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-            }`}
-            aria-invalid={touched.title && !!errors.title}
-            aria-describedby={touched.title && errors.title ? "title-error" : undefined}
-          />
-
-          {/* Progress bar */}
-          <div className="mt-2 h-1 bg-gray-200 rounded overflow-hidden">
-            <div
-              className={`h-full transition-all ${
-                getTitleProgress() > 90 ? "bg-red-500" : "bg-blue-500"
-              }`}
-              style={{ width: `${getTitleProgress()}%` }}
-            />
-          </div>
-
-          {/* Error message */}
-          {touched.title && errors.title && (
-            <p id="title-error" className="mt-2 text-sm text-red-600">
-              {errors.title}
-            </p>
-          )}
-
-          {/* Hint */}
-          {!errors.title && (
-            <p className="mt-2 text-sm text-gray-600">
-              💡 Make it descriptive and compelling
-            </p>
-          )}
-        </div>
-
-        {/* Featured Image field */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Featured Image URL
-          </label>
-
-          <input
-            type="url"
-            value={form.imageUrl}
-            onChange={(e) => handleFieldChange("imageUrl", e.target.value)}
-            onBlur={() => handleFieldBlur("imageUrl")}
-            placeholder="https://example.com/image.jpg"
-            className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 transition ${
-              touched.imageUrl && errors.imageUrl
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-            }`}
-            aria-invalid={touched.imageUrl && !!errors.imageUrl}
-            aria-describedby={
-              touched.imageUrl && errors.imageUrl ? "image-error" : undefined
-            }
-          />
-
-          {/* Error message */}
-          {touched.imageUrl && errors.imageUrl && (
-            <p id="image-error" className="mt-2 text-sm text-red-600">
-              {errors.imageUrl}
-            </p>
-          )}
-
-          {/* Image preview */}
-          {form.imageUrl && !imageFailed && (
-            <div className="mt-4 relative">
-              {imageLoading && (
-                <div className="absolute inset-0 bg-gray-200 animate-pulse rounded" />
-              )}
-              <img
-                src={form.imageUrl}
-                alt="Preview"
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-                className="w-full max-h-64 object-cover rounded border border-gray-200"
+              <input
+                type="text"
+                value={form.title}
+                onChange={(e) => handleFieldChange("title", e.target.value)}
+                onBlur={() => handleFieldBlur("title")}
+                placeholder="e.g., Getting Started with Next.js 16"
+                className={`min-h-13 w-full rounded-3xl border px-5 py-3.5 text-base text-slate-900 outline-none ${
+                  touched.title && errors.title
+                    ? "border-red-300 bg-red-50/60 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                    : "border-slate-200 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                }`}
+                aria-invalid={touched.title && !!errors.title}
+                aria-describedby={touched.title && errors.title ? "title-error" : undefined}
               />
+
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className={`h-full transition-all ${
+                    getTitleProgress() > 90 ? "bg-red-500" : "bg-blue-600"
+                  }`}
+                  style={{ width: `${getTitleProgress()}%` }}
+                />
+              </div>
+
+              {touched.title && errors.title ? (
+                <p id="title-error" className="mt-3 text-sm text-red-600">
+                  {errors.title}
+                </p>
+              ) : (
+                <p className="mt-3 text-sm text-slate-500">
+                  Use a concise, descriptive headline that tells readers what they will learn.
+                </p>
+              )}
             </div>
-          )}
 
-          {imageFailed && (
-            <p className="mt-2 text-sm text-red-600">
-              Could not load image. Please check the URL.
+            <div>
+              <label className="mb-3 block text-sm font-medium text-slate-700">
+                Featured Image URL
+              </label>
+
+              <input
+                type="url"
+                value={form.imageUrl}
+                onChange={(e) => handleFieldChange("imageUrl", e.target.value)}
+                onBlur={() => handleFieldBlur("imageUrl")}
+                placeholder="https://example.com/image.jpg"
+                className={`min-h-13 w-full rounded-3xl border px-5 py-3.5 text-base text-slate-900 outline-none ${
+                  touched.imageUrl && errors.imageUrl
+                    ? "border-red-300 bg-red-50/60 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                    : "border-slate-200 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                }`}
+                aria-invalid={touched.imageUrl && !!errors.imageUrl}
+                aria-describedby={
+                  touched.imageUrl && errors.imageUrl ? "image-error" : undefined
+                }
+              />
+
+              {touched.imageUrl && errors.imageUrl ? (
+                <p id="image-error" className="mt-3 text-sm text-red-600">
+                  {errors.imageUrl}
+                </p>
+              ) : (
+                <p className="mt-3 text-sm text-slate-500">
+                  Optional. Add a strong cover image to make the listing card more engaging.
+                </p>
+              )}
+
+              {form.imageUrl && !imageFailed && (
+                <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-50">
+                  <div className="relative aspect-[16/9]">
+                    {imageLoading && (
+                      <div className="absolute inset-0 animate-pulse bg-slate-200" />
+                    )}
+                    <img
+                      src={form.imageUrl}
+                      alt="Preview"
+                      onLoad={handleImageLoad}
+                      onError={handleImageError}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {imageFailed && (
+                <p className="mt-3 text-sm text-red-600">
+                  Could not load image. Please check the URL.
+                </p>
+              )}
+            </div>
+
+            <div>
+              <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+                <label className="block text-sm font-medium text-slate-700">
+                  Post Content
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+                <span className="text-xs text-slate-500">
+                  {stats.body.words} words • {stats.body.characters} / {POST_VALIDATION.body.maxLength} chars
+                </span>
+              </div>
+
+              <textarea
+                value={form.body}
+                onChange={(e) => handleFieldChange("body", e.target.value)}
+                onBlur={() => handleFieldBlur("body")}
+                placeholder="Write your article here..."
+                className={`min-h-[420px] w-full rounded-[1.75rem] border px-5 py-4 font-mono text-sm leading-7 text-slate-900 outline-none ${
+                  touched.body && errors.body
+                    ? "border-red-300 bg-red-50/60 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                    : "border-slate-200 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                }`}
+                rows={20}
+                aria-invalid={touched.body && !!errors.body}
+                aria-describedby={touched.body && errors.body ? "body-error" : undefined}
+              />
+
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className={`h-full transition-all ${
+                    getBodyProgress() > 90 ? "bg-red-500" : "bg-blue-600"
+                  }`}
+                  style={{ width: `${getBodyProgress()}%` }}
+                />
+              </div>
+
+              {touched.body && errors.body ? (
+                <p id="body-error" className="mt-3 text-sm text-red-600">
+                  {errors.body}
+                </p>
+              ) : (
+                <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-500">
+                  <span>Estimated reading time: ~{stats.readingTime} min</span>
+                  <span>{stats.body.words} words</span>
+                  <span>Markdown-friendly content</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-3 border-t border-slate-200 pt-6 md:flex-row">
+              <button
+                type="submit"
+                disabled={loading || !isFormValid}
+                className="min-h-12 flex-1 rounded-full bg-blue-700 px-6 py-3 text-sm font-medium text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                aria-busy={loading}
+              >
+                {loading ? "Publishing..." : "Publish Post"}
+              </button>
+              <Link
+                href="/"
+                className="min-h-12 flex-1 rounded-full border border-slate-200 px-6 py-3 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </Link>
+            </div>
+          </div>
+        </form>
+
+        <div className="space-y-6">
+          <div className="surface-card rounded-[2rem] p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
+              Post snapshot
             </p>
-          )}
-
-          {!errors.imageUrl && (
-            <p className="mt-2 text-sm text-gray-600">
-              📸 Optional: Add a featured image to make your post stand out
-            </p>
-          )}
-        </div>
-
-        {/* Body field */}
-        <div>
-          <div className="flex justify-between items-baseline mb-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Post Content
-              <span className="text-red-500 ml-1">*</span>
-            </label>
-            <span className="text-xs text-gray-500">
-              {stats.body.words} words • {stats.body.characters} /
-              {POST_VALIDATION.body.maxLength} chars
-            </span>
+            <div className="mt-5 grid gap-4">
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                  Reading time
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">
+                  ~{stats.readingTime} min
+                </p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                  Word count
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">
+                  {stats.body.words}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                  Title length
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">
+                  {stats.title.characters}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <textarea
-            value={form.body}
-            onChange={(e) => handleFieldChange("body", e.target.value)}
-            onBlur={() => handleFieldBlur("body")}
-            placeholder="Write your blog post content here... (Markdown supported)"
-            className={`w-full px-4 py-3 border rounded focus:outline-none focus:ring-2 transition font-mono text-sm ${
-              touched.body && errors.body
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-            }`}
-            rows={20}
-            aria-invalid={touched.body && !!errors.body}
-            aria-describedby={touched.body && errors.body ? "body-error" : undefined}
-          />
-
-          {/* Progress bar */}
-          <div className="mt-2 h-1 bg-gray-200 rounded overflow-hidden">
-            <div
-              className={`h-full transition-all ${
-                getBodyProgress() > 90 ? "bg-red-500" : "bg-blue-500"
-              }`}
-              style={{ width: `${getBodyProgress()}%` }}
-            />
+          <div className="surface-card rounded-[2rem] p-6">
+            <h3 className="text-lg font-semibold text-slate-900">
+              About AI summaries
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-slate-600">
+              After publishing, the platform generates a concise summary from your post body to improve scanability on the listing page.
+            </p>
+            <ul className="mt-4 space-y-3 text-sm text-slate-600">
+              <li>Automatically generated after publishing</li>
+              <li>Helps readers preview the article faster</li>
+              <li>Works best when your content is clear and structured</li>
+            </ul>
           </div>
 
-          {/* Error message */}
-          {touched.body && errors.body && (
-            <p id="body-error" className="mt-2 text-sm text-red-600">
-              {errors.body}
-            </p>
-          )}
-
-          {/* Stats */}
-          {!errors.body && (
-            <div className="mt-3 flex gap-4 text-sm text-gray-600">
-              <span>⏱️ Reading time: ~{stats.readingTime} min</span>
-              <span>📊 {stats.body.words} words</span>
-            </div>
-          )}
+          <div className="surface-card rounded-[2rem] p-6">
+            <h3 className="text-lg font-semibold text-slate-900">
+              Writing tips
+            </h3>
+            <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
+              <li>Aim for at least {POST_VALIDATION.body.minLength} characters so the article has enough context.</li>
+              <li>Lead with a clear opening paragraph that sets expectations.</li>
+              <li>Break content into readable sections for better flow.</li>
+              <li>Use a descriptive title to improve browsing and search.</li>
+            </ul>
+          </div>
         </div>
-
-        {/* Submit buttons */}
-        <div className="flex gap-4 pt-4">
-          <button
-            type="submit"
-            disabled={loading || !isFormValid}
-            className="flex-1 py-3 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            aria-busy={loading}
-          >
-            {loading ? (
-              <>
-                <span className="mr-2">⏳</span> Creating...
-              </>
-            ) : (
-              <>
-                <span className="mr-2">📤</span> Publish Post
-              </>
-            )}
-          </button>
-          <Link
-            href="/"
-            className="flex-1 py-3 bg-gray-300 text-gray-800 rounded font-medium hover:bg-gray-400 text-center transition"
-          >
-            Cancel
-          </Link>
-        </div>
-      </form>
-
-      {/* AI Summary Info Card */}
-      <div className="mt-12 p-6 bg-blue-50 border border-blue-200 rounded-lg">
-        <h3 className="text-lg font-bold text-blue-900 mb-3">
-          🤖 About AI Summaries
-        </h3>
-        <p className="text-blue-800 mb-3">
-          When you publish your post, our AI will automatically generate a concise
-          100-150 word summary. This helps readers quickly understand your post
-          without reading the entire content.
-        </p>
-        <ul className="text-blue-800 space-y-1 text-sm">
-          <li>✨ Benefits: Improves discoverability and click-through rates</li>
-          <li>⚡ Speed: Usually takes 2-5 seconds to generate</li>
-          <li>📝 Content: Summarizes your post body, not title or image</li>
-          <li>🔄 Can be regenerated: Edit your post to update the summary</li>
-        </ul>
-      </div>
-
-      {/* Best practices card */}
-      <div className="mt-6 p-6 bg-purple-50 border border-purple-200 rounded-lg">
-        <h3 className="text-lg font-bold text-purple-900 mb-3">
-          💻 Writing Tips for Better Results
-        </h3>
-        <ul className="text-purple-800 space-y-2 text-sm">
-          <li>
-            • <strong>Aim for at least {POST_VALIDATION.body.minLength} characters</strong> — Longer
-            content gets better summaries
-          </li>
-          <li>
-            • <strong>Start with a clear hook</strong> — First paragraph sets the tone
-          </li>
-          <li>
-            • <strong>Use descriptive title</strong> — Helps with search and sharing
-          </li>
-          <li>
-            • <strong>Include subheadings</strong> — Better structure for summarization
-          </li>
-        </ul>
       </div>
     </div>
   );

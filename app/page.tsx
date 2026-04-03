@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import PostCard from "./components/PostCard";
 
 interface Post {
   id: string;
@@ -63,132 +64,176 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12 rounded-lg">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">📝 Welcome to BlogPost AI</h1>
-          <p className="text-lg mb-6">
-            Discover intelligent blog posts with AI-generated summaries
-          </p>
-          <Link
-            href="/auth/register"
-            className="inline-block px-6 py-3 bg-white text-blue-600 font-bold rounded hover:bg-gray-100"
-          >
-            Start Writing Today
-          </Link>
+    <div className="w-full space-y-10">
+      <section className="surface-card overflow-hidden rounded-[2rem]">
+        <div className="grid gap-10 px-6 py-10 md:px-10 md:py-14 lg:grid-cols-[1.3fr_0.9fr] lg:items-end">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-blue-700">
+              Modern blogging platform
+            </p>
+            <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight text-slate-900 md:text-5xl">
+              Publish thoughtful writing with clean presentation and AI-assisted summaries.
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
+              Browse recent posts, discover concise summaries, and share polished articles through a focused publishing experience.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/auth/register"
+                className="rounded-full bg-blue-700 px-6 py-3 text-sm font-medium text-white hover:bg-blue-800"
+              >
+                Start writing
+              </Link>
+              <Link
+                href="/auth/login"
+                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Sign in
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid gap-4 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5 md:grid-cols-3 lg:grid-cols-1">
+            <div>
+              <p className="text-3xl font-semibold text-slate-900">{posts.length}</p>
+              <p className="mt-1 text-sm text-slate-600">
+                Posts on this page
+              </p>
+            </div>
+            <div>
+              <p className="text-3xl font-semibold text-slate-900">{totalPages}</p>
+              <p className="mt-1 text-sm text-slate-600">Pages available</p>
+            </div>
+            <div>
+              <p className="text-3xl font-semibold text-slate-900">
+                {searchQuery ? "Filtered" : "Latest"}
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                Clean reading-first layout
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Search Section */}
-      <section>
-        <form onSubmit={handleSearch} className="flex gap-2">
+      <section className="surface-card rounded-[2rem] p-6 md:p-8">
+        <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Explore posts
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+              Search by title, content, or summary
+            </h2>
+          </div>
+          <p className="text-sm text-slate-500">
+            Page {page} of {totalPages}
+          </p>
+        </div>
+
+        <form onSubmit={handleSearch} className="flex flex-col gap-3 md:flex-row">
           <input
             type="text"
             placeholder="Search blog posts..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded"
+            className="min-h-12 flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
           />
           <button
             type="submit"
-            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="min-h-12 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-medium text-white hover:bg-slate-800"
           >
-            🔍 Search
+            Search
           </button>
         </form>
       </section>
 
-      {/* Loading State */}
       {loading && (
-        <div className="text-center py-12">
-          <p className="text-gray-600">Loading posts...</p>
-        </div>
+        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={index}
+              className="surface-card overflow-hidden rounded-3xl"
+            >
+              <div className="h-52 animate-pulse bg-slate-200" />
+              <div className="space-y-4 p-6">
+                <div className="h-3 w-24 animate-pulse rounded-full bg-slate-200" />
+                <div className="h-6 w-4/5 animate-pulse rounded-full bg-slate-200" />
+                <div className="h-4 w-full animate-pulse rounded-full bg-slate-200" />
+                <div className="h-4 w-5/6 animate-pulse rounded-full bg-slate-200" />
+              </div>
+            </div>
+          ))}
+        </section>
       )}
 
-      {/* Error State */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <div className="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {/* Posts Grid */}
       {!loading && posts.length > 0 && (
         <section>
-          <h2 className="text-2xl font-bold mb-6">Latest Posts</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-semibold text-slate-900">
+              {searchQuery ? "Search results" : "Latest posts"}
+            </h2>
+            <p className="text-sm text-slate-500">
+              {posts.length} article{posts.length === 1 ? "" : "s"}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             {posts.map((post) => (
-              <Link key={post.id} href={`/blog/${post.id}`}>
-                <div className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-                  {post.image_url && (
-                    <img
-                      src={post.image_url}
-                      alt={post.title}
-                      className="w-full h-48 object-cover"
-                    />
-                  )}
-                  <div className="p-4">
-                    <h3 className="text-lg font-bold mb-2 line-clamp-2">
-                      {post.title}
-                    </h3>
-                    {post.summary && (
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                        {post.summary}
-                      </p>
-                    )}
-                    <div className="flex justify-between items-center text-xs text-gray-500">
-                      <span>By {post.users?.name || "Unknown"}</span>
-                      <span>👁️ {post.view_count} views</span>
-                    </div>
-                    <div className="mt-2 text-xs text-gray-400">
-                      {new Date(post.created_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-              </Link>
+              <PostCard key={post.id} post={post} />
             ))}
           </div>
         </section>
       )}
 
-      {/* No Posts */}
       {!loading && posts.length === 0 && !error && (
-        <div className="text-center py-12">
-          <p className="text-gray-600 mb-4">
+        <div className="surface-card rounded-[2rem] px-6 py-14 text-center md:px-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
+            Nothing here yet
+          </p>
+          <h3 className="mt-3 text-3xl font-semibold text-slate-900">
             {searchQuery
-              ? "No posts found matching your search."
-              : "No posts yet. Be the first to write!"}
+              ? "No posts matched your search."
+              : "Your blog feed is ready for its first story."}
+          </h3>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-600">
+            {searchQuery
+              ? "Try a broader keyword or clear the search field to browse the latest published articles."
+              : "Create an account to publish the first post and start building a thoughtful collection of articles."}
           </p>
           <Link
             href="/auth/register"
-            className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="mt-8 inline-flex rounded-full bg-blue-700 px-6 py-3 text-sm font-medium text-white hover:bg-blue-800"
           >
-            Create First Post
+            Create your first post
           </Link>
         </div>
       )}
 
-      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 my-8">
+        <div className="flex flex-wrap items-center justify-center gap-3 py-2">
           {page > 1 && (
             <button
               onClick={() => setPage(page - 1)}
-              className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+              className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               Previous
             </button>
           )}
 
-          <div className="px-4 py-2">
+          <div className="rounded-full border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm text-slate-600">
             Page {page} of {totalPages}
           </div>
 
           {page < totalPages && (
             <button
               onClick={() => setPage(page + 1)}
-              className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+              className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               Next
             </button>

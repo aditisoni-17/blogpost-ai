@@ -33,7 +33,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <AuthProvider>
           <Header />
-          <main className="flex-grow container mx-auto px-4 py-8">
+          <main className="mx-auto flex w-full max-w-7xl flex-grow px-4 py-8 md:px-6 md:py-10">
             {children}
           </main>
           <Footer />

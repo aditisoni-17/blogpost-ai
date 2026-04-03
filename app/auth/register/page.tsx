@@ -48,82 +48,110 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-8">
-      <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
+    <div className="mx-auto flex w-full max-w-5xl items-center justify-center py-8 md:py-16">
+      <div className="grid w-full overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.08)] lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="hidden bg-blue-700 px-10 py-12 text-white lg:block">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-blue-100">
+            Join the platform
+          </p>
+          <h1 className="mt-5 text-4xl font-semibold leading-tight">
+            Create your account and start publishing with confidence.
+          </h1>
+          <p className="mt-5 max-w-md text-sm leading-7 text-blue-100">
+            Set up your profile, write your first article, and let the platform handle a polished reading experience.
+          </p>
+        </div>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
+        <div className="px-6 py-8 md:px-10 md:py-12">
+          <div className="mx-auto max-w-md">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
+              New account
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold text-slate-900">Register</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Create your account to start writing and managing blog posts.
+            </p>
+
+            {error && (
+              <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                Registration successful! Redirecting to login...
+              </div>
+            )}
+
+            {!success && (
+              <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Full name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your full name"
+                    className="min-h-12 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Email address
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="min-h-12 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a secure password"
+                    className="min-h-12 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  />
+                  <p className="mt-2 text-xs text-slate-500">
+                    Use a password you can remember for repeated testing during development.
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="min-h-12 w-full rounded-2xl bg-blue-700 px-4 py-3 text-sm font-medium text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? "Creating account..." : "Register"}
+                </button>
+              </form>
+            )}
+
+            <p className="mt-6 text-center text-sm text-slate-600">
+              Already have an account?{" "}
+              <Link
+                href="/auth/login"
+                className="font-medium text-blue-700 hover:text-blue-800 hover:underline"
+              >
+                Login
+              </Link>
+            </p>
           </div>
-        )}
-
-        {success && (
-          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-            Registration successful! Redirecting to login...
-          </div>
-        )}
-
-        {!success && (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name
-              </label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? "Registering..." : "Register"}
-            </button>
-          </form>
-        )}
-
-        <p className="mt-4 text-center text-gray-600 text-sm">
-          Already have an account?{" "}
-          <Link
-            href="/auth/login"
-            className="text-blue-600 hover:underline font-medium"
-          >
-            Login
-          </Link>
-        </p>
+        </div>
       </div>
     </div>
   );
