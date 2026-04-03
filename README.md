@@ -166,7 +166,45 @@ Working and verified:
 - Production build
 
 Still external to this repository:
-- VPS deployment and public live URL setup
+- public deployment setup
+
+## Render Deployment
+
+This project is prepared for deployment on Render as a Node Web Service.
+
+### Option 1: Blueprint deployment
+
+The repository includes:
+
+- `render.yaml`
+
+In Render:
+
+1. Open **Blueprints**
+2. Connect this GitHub repository
+3. Select the repository root
+4. Provide values for the `sync: false` environment variables
+5. Deploy the Blueprint
+
+### Option 2: Manual Web Service deployment
+
+Create a new **Web Service** in Render with:
+
+- Runtime: `Node`
+- Build Command: `npm install && npm run build`
+- Start Command: `npm run start`
+
+Environment variables to add in Render:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `GOOGLE_AI_API_KEY`
+- `NEXT_PUBLIC_APP_URL`
+
+After Render gives you an `onrender.com` URL, set:
+
+- `NEXT_PUBLIC_APP_URL=https://your-service-name.onrender.com`
 
 ## Repository Notes
 
