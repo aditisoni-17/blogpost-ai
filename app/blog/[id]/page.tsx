@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { CommentsSection } from "@/app/components/CommentsSection";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAuthFetch } from "@/app/hooks/useAuthFetch";
 import { useParams, useRouter } from "next/navigation";
@@ -24,34 +25,33 @@ interface Post {
   };
 }
 
-interface Comment {
-  id: string;
-  post_id: string;
-  user_id: string;
-  comment_text: string;
-  is_approved: boolean;
-  created_at: string;
-  users: {
-    name: string;
-    email: string;
-  };
-}
-
 export default function BlogDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { isAuthenticated, user, isAuthor: currentUserIsAuthor, isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { fetchWithAuth } = useAuthFetch();
   
   const postId = params.id as string;
   const [post, setPost] = useState<Post | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<
+    Array<{
+      id: string;
+      post_id: string;
+      user_id: string;
+      comment_text: string;
+      is_approved: boolean;
+      created_at: string;
+      users: {
+        id: string;
+        name: string;
+        email: string;
+      };
+    }>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [commentText, setCommentText] = useState("");
-  const [submittingComment, setSubmittingComment] = useState(false);
 
- useEffect(() => {
+  useEffect(() => {
     fetchPost();
     fetchComments();
   }, [postId]);
@@ -90,46 +90,6 @@ export default function BlogDetailPage() {
     }
   };
 
-  const handleCommentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!isAuthenticated) {
-      router.push("/auth/login");
-      return;
-    }
-
-    if (!commentText.trim()) {
-      alert("Please enter a comment");
-      return;
-    }
-
-    setSubmittingComment(true);
-
-    try {
-      const response = await fetchWithAuth("/api/comments", {
-        method: "POST",
-        body: JSON.stringify({
-          post_id: postId,
-          comment_text: commentText,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setCommentText("");
-        alert("Comment submitted! It will appear after admin approval.");
-        fetchComments();
-      } else {
-        alert(data.error || "Failed to submit comment");
-      }
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Error submitting comment");
-    } finally {
-      setSubmittingComment(false);
-    }
-  };
-
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this post?")) return;
 
@@ -150,138 +110,132 @@ export default function BlogDetailPage() {
   };
 
   if (loading) {
-    return <div className="text-center py-12">Loading post...</div>;
+    return (
+      <div className="mx-auto w-full max-w-5xl space-y-6 py-12">
+        <div className="h-72 animate-pulse rounded-[2rem] bg-slate-200" />
+        <div className="surface-card rounded-[2rem] p-8">
+          <div className="h-4 w-28 animate-pulse rounded-full bg-slate-200" />
+          <div className="mt-5 h-12 w-3/4 animate-pulse rounded-full bg-slate-200" />
+          <div className="mt-4 h-4 w-1/2 animate-pulse rounded-full bg-slate-200" />
+          <div className="mt-8 space-y-3">
+            <div className="h-4 w-full animate-pulse rounded-full bg-slate-200" />
+            <div className="h-4 w-11/12 animate-pulse rounded-full bg-slate-200" />
+            <div className="h-4 w-10/12 animate-pulse rounded-full bg-slate-200" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <div className="mx-auto max-w-3xl rounded-[2rem] border border-red-200 bg-red-50 px-6 py-5 text-red-700">
         {error}
       </div>
     );
   }
 
   if (!post) {
-    return <div className="text-center py-12">Post not found</div>;
+    return (
+      <div className="mx-auto max-w-3xl rounded-[2rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center">
+        <h1 className="text-3xl font-semibold text-slate-900">Post not found</h1>
+        <p className="mt-4 text-slate-600">
+          The article may have been removed or the link may be incorrect.
+        </p>
+        <Link
+          href="/"
+          className="mt-8 inline-flex rounded-full bg-blue-700 px-6 py-3 text-sm font-medium text-white hover:bg-blue-800"
+        >
+          Back to posts
+        </Link>
+      </div>
+    );
   }
 
   const isAuthor = user?.id === post.author_id;
   const canEdit = isAuthor || isAdmin;
 
   return (
-    <article className="max-w-3xl mx-auto space-y-6">
-      {/* Featured Image */}
+    <article className="mx-auto w-full max-w-5xl space-y-8">
       {post.image_url && (
-        <img
-          src={post.image_url}
-          alt={post.title}
-          className="w-full h-96 object-cover rounded-lg"
-        />
+        <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-100">
+          <img
+            src={post.image_url}
+            alt={post.title}
+            className="h-[260px] w-full object-cover md:h-[420px]"
+          />
+        </div>
       )}
 
-      {/* Title and Meta */}
-      <header className="space-y-4">
-        <h1 className="text-4xl font-bold">{post.title}</h1>
-        
-        <div className="flex justify-between items-start">
-          <div className="text-gray-600">
-            <p className="font-medium">By {post.users?.name || "Unknown"}</p>
-            <p className="text-sm">
-              {new Date(post.created_at).toLocaleDateString()} • {post.view_count} views
-            </p>
+      <div className="surface-card rounded-[2rem] p-6 md:p-10">
+        <header className="space-y-6">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+            <span className="rounded-full bg-slate-100 px-3 py-1">
+              {new Date(post.created_at).toLocaleDateString()}
+            </span>
+            <span>{post.view_count} views</span>
           </div>
 
-          {canEdit && (
-            <div className="flex gap-2">
-              <Link
-                href={`/blog/${post.id}/edit`}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                ✏️ Edit
-              </Link>
-              <button
-                onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                🗑️ Delete
-              </button>
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-4">
+              <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 md:text-5xl">
+                {post.title}
+              </h1>
+              <div className="text-slate-600">
+                <p className="font-medium text-slate-800">
+                  By {post.users?.name || "Unknown"}
+                </p>
+                <p className="mt-1 text-sm">
+                  Updated {new Date(post.updated_at || post.created_at).toLocaleDateString()}
+                </p>
+              </div>
             </div>
-          )}
-        </div>
-      </header>
 
-      {/* Summary */}
-      {post.summary && (
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-          <h3 className="font-bold text-blue-900 mb-2">🤖 AI Summary</h3>
-          <p className="text-blue-800">{post.summary}</p>
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="prose max-w-none">
-        <div className="text-gray-800 leading-relaxed whitespace-pre-wrap">
-          {post.body}
-        </div>
-      </div>
-
-      {/* Comments Section */}
-      <section className="border-t pt-8 mt-12">
-        <h2 className="text-2xl font-bold mb-6">💬 Comments</h2>
-
-        {isAuthenticated ? (
-          <form onSubmit={handleCommentSubmit} className="mb-8">
-            <textarea
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Share your thoughts..."
-              className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              rows={4}
-            />
-            <button
-              type="submit"
-              disabled={submittingComment}
-              className="mt-3 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              {submittingComment ? "Submitting..." : "Post Comment"}
-            </button>
-            <p className="mt-2 text-sm text-gray-600">
-              Your comment will be visible after admin approval.
-            </p>
-          </form>
-        ) : (
-          <div className="mb-8 p-4 bg-gray-100 rounded text-center">
-            <p className="text-gray-700 mb-2">Please login to comment</p>
-            <Link
-              href="/auth/login"
-              className="text-blue-600 hover:underline font-medium"
-            >
-              Login here
-            </Link>
+            {canEdit && (
+              <div className="flex gap-3">
+                <Link
+                  href={`/blog/${post.id}/edit`}
+                  className="rounded-full bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800"
+                >
+                  Edit
+                </Link>
+                <button
+                  onClick={handleDelete}
+                  className="rounded-full border border-red-200 bg-red-50 px-5 py-2.5 text-sm font-medium text-red-700 hover:bg-red-100"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
+        </header>
+
+        {post.summary && (
+          <section className="mt-8 rounded-[1.5rem] border border-blue-200 bg-blue-50 p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-700">
+              AI Summary
+            </p>
+            <p className="mt-3 leading-7 text-blue-950">{post.summary}</p>
+          </section>
         )}
 
-        <div className="space-y-4">
-          {comments.length === 0 ? (
-            <p className="text-gray-600">No comments yet. Be the first to comment!</p>
-          ) : (
-            comments.map((comment) => (
-              <div
-                key={comment.id}
-                className="border border-gray-200 rounded p-4 bg-gray-50"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <p className="font-medium">{comment.users?.name || "Anonymous"}</p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(comment.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <p className="text-gray-800">{comment.comment_text}</p>
-              </div>
-            ))
-          )}
-        </div>
-      </section>
+        <section className="mt-8 border-t border-slate-200 pt-8">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
+            Full article
+          </p>
+          <div className="whitespace-pre-wrap text-base leading-8 text-slate-700">
+            {post.body}
+          </div>
+        </section>
+      </div>
+
+      <CommentsSection
+        postId={postId}
+        comments={comments}
+        onCommentAdded={() => {
+          fetchComments();
+        }}
+      />
     </article>
   );
 }
